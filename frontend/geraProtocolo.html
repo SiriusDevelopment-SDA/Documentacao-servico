@@ -1,0 +1,380 @@
+<!-- ========================================= HTML • Documentação de Serviços ========================================== -->
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <!-- Metadados básicos -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Título da página -->
+  <title>Documentação de Serviços</title>
+
+  <!-- CSS principal do projeto -->
+  <link rel="stylesheet" href="/frontend/CSS/geraProtocolo.css">
+</head>
+
+<body>
+  <div class="container"><!-- Wrapper central da página -->
+
+    <!-- ===================== HEADER ===================== -->
+    <header>
+      <img src="/frontend/Assets/logoCoraxy2.jpg" alt="Logo UnificaMais" class="logo">
+      <h1>Documentação de Serviços</h1>
+      <p>Sistema de Registro de Serviços</p>
+    </header>
+    <!-- =================== /HEADER ====================== -->
+
+    <!-- ===================== FORM PRINCIPAL ===================== -->
+    <form id="servicesForm">
+      
+      <!-- === Seção: Dados do Contrato === -->
+      <section class="form-section">
+        <h2>Dados do Contrato</h2>
+
+        <div class="form-group">
+          <label for="contractorNameE">Nome da empresa:</label>
+          <input type="text" id="contractorNameE" name="contractorNameE" required>
+        </div>
+
+        <div class="form-group">
+          <label for="contractorName">Nome do Contratante:</label>
+          <input type="text" id="contractorName" name="contractorName" required>
+        </div>
+
+        <div class="form-group">
+          <label for="documenter">Quem está documentando:</label>
+          <input type="text" id="documenter" name="documenter" required>
+        </div>
+
+        <div class="form-group">
+          <label for="contractDate">Data:</label>
+          <input type="date" id="contractDate" name="contractDate" required>
+        </div>
+
+        <div class="form-group">
+          <label for="contractNumber">Número do Contrato:</label>
+          <input type="text" id="contractNumber" name="contractNumber" required readonly>
+        </div>
+
+        <div class="form-group">
+          <label for="additionalInfo">Informações Adicionais:</label>
+          <textarea id="additionalInfo" name="additionalInfo" rows="3" placeholder="Outras informações relevantes do contrato..."></textarea>
+        </div>
+      </section>
+      <!-- === /Dados do Contrato === -->
+
+      <!-- === Seção: Seleção de ERP === -->
+      <section class="form-section">
+        <h2>Seleção de ERP</h2>
+
+        <!-- Cards dos ERPs disponíveis -->
+        <div class="erp-grid">
+          <div class="erp-card active" data-erp="IXC">
+            <h3>IXC</h3>
+            <span class="erp-status active">Ativo</span>
+          </div>
+
+          <div class="erp-card active" data-erp="SGP">
+            <h3>SGP</h3>
+            <span class="erp-status active">Ativo</span>
+          </div>
+        </div>
+
+        <!-- Ações relacionadas a ERPs -->
+        <div class="add-erp-section">
+          <button type="button" id="addNewErpBtn" class="add-erp-btn">+ Adicionar Novo ERP</button>
+          <button type="button" id="deleteServiceBtn2" class="action-btn danger2">Excluir ERP</button>
+        </div>
+      </section>
+      <!-- === /Seleção de ERP === -->
+
+      <!-- === Seção: Serviços do ERP Selecionado === -->
+      <section class="form-section" id="servicesSection" style="display: none;">
+        <!-- Título e ações em massa -->
+        <div class="services-header">
+          <h2 id="servicesTitle">Serviços</h2>
+          <div class="services-actions">
+            <button type="button" id="selectAllBtn" class="action-btn">Selecionar Todos</button>
+            <button type="button" id="deselectAllBtn" class="action-btn">Desmarcar Todos</button>
+          </div>
+        </div>
+
+        <!-- Lista dinâmica de serviços (renderizada via JS) -->
+        <div id="servicesList" class="services-list">
+          <!-- Serviços serão carregados dinamicamente -->
+        </div>
+
+        <!-- Ação: adicionar novo serviço -->
+        <div class="add-service-section">
+          <button type="button" id="addNewServiceBtn" class="add-service-btn2">+ Adicionar Novo Serviço</button>
+        </div>
+      </section>
+      <!-- === /Serviços do ERP Selecionado === -->
+
+      <!-- === Seção: Serviços desejados mas não oferecidos === -->
+      <section class="form-section">
+        <h2>Serviços Desejados (Não Oferecidos)</h2>
+        <div class="form-group">
+          <label for="desiredServices">Descreva os serviços que gostaria que existissem mas que não oferecemos:</label>
+          <textarea id="desiredServices" name="desiredServices" rows="4" placeholder="Liste aqui os serviços que você gostaria que oferecêssemos..."></textarea>
+        </div>
+      </section>
+      <!-- === /Serviços desejados === -->
+
+      <!-- === Ações do formulário (prévia/geração/limpeza) === -->
+      <div class="form-actions">
+        <button type="button" id="previewDevBtn" class="action-btn primary">Prévia Dev</button>
+        <button type="button" id="previewClientBtn" class="action-btn primary">Prévia contrato</button>
+        <button type="button" id="generatePdfDevBtn" class="action-btn success">Baixar registro Dev</button>
+        <button type="button" id="generatePdfClientBtn" class="action-btn success">Baixar Contrato</button>
+        <button type="reset" class="action-btn secondary">Limpar Formulário</button>
+        <button id="saveProtocolBtn" type="button" class="action-btn primary1">Salvar protocolo</button>
+      </div>
+      <!-- === /Ações do formulário === -->
+
+    </form>
+    <!-- =================== /FORM PRINCIPAL =================== -->
+
+    <!-- ===================== PRÉVIA (overlay/área de preview) ===================== -->
+    <div id="pdfPreview" class="pdf-preview" style="display: none;">
+      <div class="preview-header">
+        <h2 id="previewTitle">Prévia do Documento</h2>
+        <button type="button" id="closePreviewBtn" class="close-btn">X</button>
+      </div>
+      <div id="previewContent" class="preview-content"></div>
+    </div>
+    <!-- =================== /PRÉVIA =================== -->
+
+    <!-- ===================== MODAIS ===================== -->
+
+    <!-- Modal: Adicionar Novo ERP -->
+    <div id="newErpModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Adicionar Novo ERP</h3>
+          <button type="button" id="closeNewErpModal" class="close-btn">X</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="newErpName">Nome do ERP</label>
+            <input type="text" id="newErpName" placeholder="Digite o nome do ERP">
+          </div>
+          <!-- Switch de ativo (desabilitado no HTML atual)
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="newErpActive" checked>
+              ERP ativo
+            </label>
+          </div> -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" id="cancelNewErp" class="action-btn secondary">Cancelar</button>
+          <button type="button" id="saveNewErp" class="action-btn primary3">Adicionar ERP</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Configuração do Serviço -->
+    <div id="serviceConfigModal" class="modal">
+      <div class="modal-content large">
+        <div class="modal-header">
+          <h3 id="configModalTitle">Configuração do Serviço</h3>
+          <button type="button" id="closeConfigModal" class="close-btn">X</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="config-form">
+            <!-- Campos de configuração (descrição/instruções/API/pré-requisitos/responsável/ativo) -->
+            <div class="form-group">
+              <label for="configDescricao">Descrição interna</label>
+              <input type="text" id="configDescricao" placeholder="Descrição breve do serviço">
+            </div>
+
+            <div class="form-group">
+              <label for="configInstrucoes">Instruções/Notas operacionais</label>
+              <textarea id="configInstrucoes" rows="3" placeholder="Instruções detalhadas para uso do serviço"></textarea>
+            </div>
+
+            <div class="form-group checkbox-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="configSemAPI">
+                <span class="erp-status no-api">Sem necessidade de API</span>
+              </label>
+            </div>
+
+            <div id="apiFields">
+              <div class="form-group">
+                <label for="configEndpoint">Endpoint/API/Integração</label>
+                <input type="text" id="configEndpoint" placeholder="https://api.exemplo.com/endpoint">
+              </div>
+
+              <div class="form-group">
+                <label for="configParametros">Parâmetros padrão (JSON)</label>
+                <textarea id="configParametros" rows="4" placeholder='{"exemplo": "valor"}'></textarea>
+                <small class="field-hint">Formato JSON válido</small>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Pré-requisitos</label>
+              <div class="checkbox-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="configExigeContrato"> Exige contrato
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" id="configExigeCpfCnpj"> Exige CPF/CNPJ
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" id="configExigeLogin"> Exige login ativo
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="configResponsavel">Responsável padrão</label>
+              <input type="text" id="configResponsavel" placeholder="Nome do responsável">
+            </div>
+
+            <div class="form-group checkbox-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="configAtivo" checked>
+                Serviço ativo
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <!-- Ações do modal de configuração -->
+          <button type="button" id="deleteServiceBtn" class="action-btn danger">Excluir serviço</button>
+          <button type="button" id="resetConfigBtn" class="action-btn secondary">Repor padrão</button>
+          <button type="button" id="saveConfigBtn" class="action-btn primary1">Salvar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Motivo para desmarcar serviço -->
+    <div id="unselectReasonModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Motivo da desativação</h3>
+          <button type="button" id="closeUnselectReasonModal" class="close-btn">X</button>
+        </div>
+
+        <div class="modal-body1">
+          <p>Explique por que o serviço foi desmarcado para este contrato.</p>
+          <textarea id="unselectReasonText" rows="4" placeholder="Ex.: Cliente não deseja este recurso no momento" class="textarea"></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="cancelUnselectReason" class="action-btn secondary">Cancelar</button>
+          <button type="button" id="saveUnselectReason" class="action-btn primary1">Salvar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Adicionar Novo Serviço -->
+    <div id="newServiceModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Adicionar Novo Serviço</h3>
+          <button type="button" id="closeNewServiceModal" class="close-btn">X</button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Presets/atalhos de serviço (chips) -->
+          <div class="form-group">
+            <label>Atalhos de serviço</label>
+            <div id="presetServiceChips" class="chip-row"><!-- preenchido via JS --></div>
+            <small class="field-hint">Clique para preencher automaticamente. Você pode editar depois.</small>
+          </div>
+
+          <!-- Nome do serviço + flag de ativo -->
+          <div class="form-group">
+            <label for="newServiceName">Nome do serviço</label>
+            <input type="text" id="newServiceName" placeholder="Digite o nome do serviço" required>
+          </div>
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input id="newServiceActive" checked>
+              Serviço ativo
+            </label>
+          </div>
+
+          <!-- Configuração completa do novo serviço -->
+          <div id="newServiceConfigBlock" class="config-form">
+            <div class="form-group">
+              <label for="newConfigDescricao">Descrição interna</label>
+              <input type="text" id="newConfigDescricao" placeholder="Descrição breve do serviço">
+            </div>
+
+            <div class="form-group">
+              <label for="newConfigInstrucoes">Instruções/Notas operacionais</label>
+              <textarea id="newConfigInstrucoes" rows="3" placeholder="Instruções detalhadas para uso do serviço"></textarea>
+            </div>
+
+            <div class="form-group checkbox-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="newConfigSemAPI">
+                <span class="erp-status no-api">Sem necessidade de API</span>
+              </label>
+            </div>
+
+            <div id="newApiFields">
+              <div class="form-group">
+                <label for="newConfigEndpoint">Endpoint/API/Integração</label>
+                <input type="text" id="newConfigEndpoint" placeholder="https://api.exemplo.com/endpoint">
+              </div>
+
+              <div class="form-group">
+                <label for="newConfigParametros">Parâmetros padrão (JSON)</label>
+                <textarea id="newConfigParametros" rows="4" placeholder='{"exemplo": "valor"}'></textarea>
+                <small class="field-hint">Formato JSON válido</small>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Pré-requisitos</label>
+              <div class="checkbox-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="newConfigExigeContrato"> Exige contrato
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" id="newConfigExigeCpfCnpj"> Exige CPF/CNPJ
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" id="newConfigExigeLogin"> Exige login ativo
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="newConfigResponsavel">Responsável padrão</label>
+              <input type="text" id="newConfigResponsavel" placeholder="Nome do responsável">
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="cancelNewService" class="action-btn secondary">Cancelar</button>
+          <button type="button" id="saveNewService" class="action-btn primary1">Adicionar Serviço</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- =================== /MODAIS =================== -->
+
+  </div><!-- /container -->
+
+  <!-- ===================== SCRIPTS EXTERNOS & APP ===================== -->
+  <!-- pdfMake (usado para gerar PDFs com texto real) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+  <!-- Script da aplicação (toda a lógica de UI/estado/PDFs) -->
+  <script defer src="/frontend/JS/geraProtocolo.js"></script>
+  <!-- =================== /SCRIPTS =================== -->
+
+</body>
+</html>
