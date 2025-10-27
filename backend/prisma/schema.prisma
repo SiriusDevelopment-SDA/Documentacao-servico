@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =========================
+// MODELS PRINCIPAIS
+// =========================
+
+model ERP {
+  id    Int     @id @default(autoincrement())
+  nome  String  @unique
+  ativo Boolean @default(true)
+
+  // Relacionamento com Documentacao
+  documentacoes Documentacao[]
+}
+
+model Documentacao {
+  id               Int      @id @default(autoincrement())
+  nome_empresa     String
+  nome_contratante String
+  documentado_por  String
+  data             DateTime
+  numero_contrato  String
+  info_adicionais  String?
+  createdAt        DateTime @default(now())
+
+  // 🔗 Relacionamento com ERP
+  erp   ERP @relation(fields: [erpId], references: [id])
+  erpId Int
+
+  // 🔗 Relacionamentos com outras tabelas (virão depois)
+  servicos          Servico[]
+  servicosDesejados ServicoDesejado[]
+}
+
+model Servico {
+  id                  Int      @id @default(autoincrement())
+  nome                String
+  descricao           String?
+  instrucoes          String?
+  ativo               Boolean  @default(true)
+  sem_necessidade_api Boolean  @default(false)
+  endpoint            String?
+  parametros_padrao   Json?
+  exige_contrato      Boolean  @default(false)
+  exige_cpf_cnpj      Boolean  @default(false)
+  exige_login_ativo   Boolean  @default(false)
+  responsavel_padrao  String?
+  createdAt           DateTime @default(now())
+
+  // 🔗 Relacionamento com Documentacao
+  documentacao   Documentacao @relation(fields: [documentacaoId], references: [id])
+  documentacaoId Int
+}
+
+model ServicoDesejado {
+  id        Int     @id @default(autoincrement())
+  descricao String?
+  createdAt DateTime @default(now())
+
+   // 🔗 Relacionamento com Documentacao
+  documentacao Documentacao @relation(fields: [documentacaoId], references: [id])
+  documentacaoId Int
+}
