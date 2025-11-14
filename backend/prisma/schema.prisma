@@ -7,10 +7,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// =========================
-// MODELS PRINCIPAIS
-// =========================
 
+//Models
 model ERP {
   id    Int     @id @default(autoincrement())
   nome  String  @unique
@@ -26,13 +24,13 @@ model Documentacao {
   nome_contratante String
   documentado_por  String
   data             DateTime
-  numero_contrato  String
+  numero_contrato  String?
   info_adicionais  String?
   createdAt        DateTime @default(now())
 
   // 🔗 Relacionamento com ERP
-  erp   ERP @relation(fields: [erpId], references: [id])
-  erpId Int
+  erpId Int?
+  erp   ERP? @relation(fields: [erpId], references: [id], onDelete: SetNull)
 
   // 🔗 Relacionamentos com outras tabelas (virão depois)
   servicos          Servico[]
@@ -60,11 +58,11 @@ model Servico {
 }
 
 model ServicoDesejado {
-  id        Int     @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   descricao String?
   createdAt DateTime @default(now())
 
-   // 🔗 Relacionamento com Documentacao
-  documentacao Documentacao @relation(fields: [documentacaoId], references: [id])
+  // 🔗 Relacionamento com Documentacao
+  documentacao   Documentacao @relation(fields: [documentacaoId], references: [id])
   documentacaoId Int
 }
