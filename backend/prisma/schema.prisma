@@ -4,12 +4,11 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 
 //Models
-model ERP {
+model Erp {
   id    Int     @id @default(autoincrement())
   nome  String  @unique
   ativo Boolean @default(true)
@@ -30,7 +29,7 @@ model Documentacao {
 
   // 🔗 Relacionamento com ERP
   erpId Int?
-  erp   ERP? @relation(fields: [erpId], references: [id], onDelete: SetNull)
+  erp   Erp? @relation(fields: [erpId], references: [id], onDelete: SetNull)
 
   // 🔗 Relacionamentos com outras tabelas (virão depois)
   servicos          Servico[]
