@@ -1,21 +1,19 @@
 import documentacaoService from "../services/documentacaoService.js";
 
 async function create(req, res) {
-    try {
-        const data = req.body;
+  try {
+      const data = req.body;
 
-        if (!data.nome_empresa || !data.nome_contratante || !data.documentado_por || !data.data || !data.numero_contrato) {
-            return res.status(400).json({ message: "Todos os campos são obrigatórios." });
-        }
+      const novaDocumentacao = await documentacaoService.create(data);
 
-        const novaDocumentacao = await documentacaoService.create(data);
+      return res.status(201).json(novaDocumentacao);
 
-        return res.status(201).json(novaDocumentacao);
-
-    } catch (error) {
-        return res.status(500).json({ message: "Erro ao criar documentação!", error: error.message });
-    }
+  } catch (error) {
+      console.error("ERRO:", error);
+      return res.status(500).json({ message: "Erro ao criar documentação!", error: error.message });
+  }
 }
+
 
 async function showAll(req, res) {
     try {

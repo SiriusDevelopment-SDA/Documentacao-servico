@@ -6,7 +6,7 @@ async function create(data) {
             nome_empresa: data.nome_empresa,
             nome_contratante: data.nome_contratante,
             documentado_por: data.documentado_por,
-            data: data.data,
+            data: new Date(data.data),
             numero_contrato: data.numero_contrato,
             info_adicionais: data.info_adicionais
         }
