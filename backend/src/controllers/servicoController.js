@@ -4,34 +4,29 @@ async function create(req, res) {
     try {
         const data = req.body;
 
-        if (!data.nome) {
+        // ===== VALIDACOES MINIMAS =====
+        if (!data.nome)
             return res.status(400).json({ message: "O campo 'nome' é obrigatório." });
-        }
 
-        if (!data.descricao) {
+        if (!data.descricao)
             return res.status(400).json({ message: "O campo 'descricao' é obrigatório." });
-        }
 
-        if (!data.endpoint) {
-            return res.status(400).json({ message: "O campo 'endpoint' é obrigatório." });
-        }
+        if (!data.documentacaoId)
+            return res.status(400).json({ message: "O campo 'documentacaoId' é obrigatório." });
 
-        if (data.parametros_padrao === undefined || data.parametros_padrao === null) {
-            return res.status(400).json({ message: "O campo 'parametros_padrao' é obrigatório." });
-        }
+        if (!data.erpId)
+            return res.status(400).json({ message: "O campo 'erpId' é obrigatório." });
 
-        if (typeof data.parametros_padrao !== "object") {
+        // ===== VALIDA PARAMETROS PADRAO =====
+        if (data.parametros_padrao && typeof data.parametros_padrao !== "object") {
             return res.status(400).json({ message: "'parametros_padrao' deve ser um JSON válido." });
-        }
-
-        if (Object.keys(data.parametros_padrao).length === 0) {
-            return res.status(400).json({ message: "'parametros_padrao' não pode ser vazio." });
         }
 
         const novoServico = await servicoService.create(data);
         return res.status(201).json(novoServico);
 
     } catch (error) {
+        console.error("❌ ERRO AO CRIAR SERVIÇO:", error);
         return res.status(500).json({
             message: "Erro ao criar o serviço!",
             error: error.message
@@ -53,12 +48,12 @@ async function showAll(req, res) {
 
 async function showById(req, res) {
     try {
-        const numericId = Number(req.params.id);
+        const id = Number(req.params.id);
 
-        if (isNaN(numericId))
+        if (isNaN(id))
             return res.status(400).json({ message: "ID inválido!" });
 
-        const servico = await servicoService.showById(numericId);
+        const servico = await servicoService.showById(id);
 
         if (!servico)
             return res.status(404).json({ message: "Serviço não encontrado!" });
@@ -75,13 +70,12 @@ async function showById(req, res) {
 
 async function destroy(req, res) {
     try {
-        const numericId = Number(req.params.id);
+        const id = Number(req.params.id);
 
-        if (isNaN(numericId))
+        if (isNaN(id))
             return res.status(400).json({ message: "ID inválido!" });
 
-        await servicoService.destroy(numericId);
-
+        await servicoService.destroy(id);
         return res.status(204).send();
 
     } catch (error) {
@@ -97,12 +91,11 @@ async function destroy(req, res) {
 
 async function update(req, res) {
     try {
-        const numericId = Number(req.params.id);
-
-        if (isNaN(numericId))
-            return res.status(400).json({ message: "ID inválido!" });
-
+        const id = Number(req.params.id);
         const data = req.body;
+
+        if (isNaN(id))
+            return res.status(400).json({ message: "ID inválido!" });
 
         if (!data.nome)
             return res.status(400).json({ message: "O campo 'nome' é obrigatório." });
@@ -110,10 +103,7 @@ async function update(req, res) {
         if (!data.descricao)
             return res.status(400).json({ message: "O campo 'descricao' é obrigatório." });
 
-        if (!data.sem_necessidade_api && !data.endpoint)
-            return res.status(400).json({ message: "O endpoint é obrigatório quando depende de API." });
-
-        const servicoAtualizado = await servicoService.update(numericId, data);
+        const servicoAtualizado = await servicoService.update(id, data);
         return res.status(200).json(servicoAtualizado);
 
     } catch (error) {

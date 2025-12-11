@@ -4,8 +4,8 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
-
 
 //Models
 model Erp {
@@ -54,6 +54,9 @@ model Servico {
   // 🔗 Relacionamento com Documentacao
   documentacao   Documentacao @relation(fields: [documentacaoId], references: [id])
   documentacaoId Int
+
+  erp Erp @relation(fields: [erpId], references: [id])
+  erpId Int
 }
 
 model ServicoDesejado {

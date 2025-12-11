@@ -1,0 +1,138 @@
+.container {
+  max-width: 1300px;
+  margin: 40px auto;
+  padding: 0 20px;
+  text-align: center;
+}
+
+.title {
+  font-size: 42px;
+  font-weight: 900;
+  color: white;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 25px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+
+  span {
+    font-weight: 700;
+  }
+
+  .divider {
+    width: 2px;
+    background: #ffffff60;
+  }
+}
+
+.topActions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.searchInput {
+  padding: 10px 14px;
+  width: 280px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+  font-size: 16px;
+}
+
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); // 3 por linha = 6 por página
+  gap: 25px;
+  margin: 0 auto;
+}
+
+.cardItem {
+  background: var(--yellow-400);
+  border-radius: 14px;
+  padding: 20px;
+  border: 1px solid #ffffff30;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: 0.2s ease;
+  overflow: hidden;
+
+  &:hover {
+    transform: translateY(-4px);
+    border-color: #ffffff80;
+  }
+}
+
+.cardHeader h3 {
+  margin: 0 0 10px;
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--dark-900);
+}
+
+.cardBody p {
+  text-align: left;
+  font-size: 15px;
+  color: var(--dark-900);
+  overflow: hidden;
+  max-height: 120px;
+}
+
+.deleteBtn {
+  background: #e74c3c;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+
+  &:hover {
+    background: #c0392b;
+  }
+}
+
+.pagination {
+  margin: 35px 0 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 25px;
+
+  span {
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  button {
+    background: #000000b5;
+    color: white;
+    padding: 10px 18px;
+    border-radius: 6px;
+    border: 1px solid #ffffff40;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.2s;
+
+    &:hover:not(:disabled) {
+      background: #000000e0;
+      transform: scale(1.05);
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+}
