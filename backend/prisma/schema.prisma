@@ -9,12 +9,15 @@ datasource db {
 
 //Models
 model Erp {
-  id    Int     @id @default(autoincrement())
-  nome  String  @unique
-  ativo Boolean @default(true)
+  id        Int         @id @default(autoincrement())
+  nome      String      @unique
+  ativo     Boolean     @default(true)
 
-  // Relacionamento com Documentacao
+  // Relação com Documentacao
   documentacoes Documentacao[]
+
+  // Relação com Servico
+  servicos   Servico[]  // Aqui é o campo de relação oposta
 }
 
 model Documentacao {
