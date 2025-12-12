@@ -1,0 +1,2 @@
+-- AddForeignKey
+ALTER TABLE "Servico" ADD CONSTRAINT "Servico_erpId_fkey" FOREIGN KEY ("erpId") REFERENCES "Erp"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
