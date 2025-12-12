@@ -7,17 +7,38 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-//Models
+model Sistema {
+  id    Int     @id @default(autoincrement())
+  nome  String  @unique
+  ativo Boolean @default(true)
+
+  // Relacionamento muitos-para-muitos com ERPs
+  erps Erp[] @relation("SistemaErps")
+}
+
 model Erp {
-  id        Int         @id @default(autoincrement())
-  nome      String      @unique
-  ativo     Boolean     @default(true)
+  id    Int     @id @default(autoincrement())
+  nome  String  @unique
+  ativo Boolean @default(true)
 
-  // Relação com Documentacao
+  // Relacionamento muitos-para-muitos com Sistemas
+  sistemas Sistema[] @relation("SistemaErps")
+
+  // Relacionamento com Documentações e Serviços
+  documentacoes Documentacao[] // RELACIONAMENTO INVERSO
+  servicos      Servico[]
+}
+
+model Empresa {
+  id        Int      @id @default(autoincrement())
+  nome      String
+  cnpj      String?
+  createdAt DateTime @default(now())
+
+  erpId Int
+  erp   Erp @relation(fields: [erpId], references: [id])
+
   documentacoes Documentacao[]
-
-  // Relação com Servico
-  servicos   Servico[]  // Aqui é o campo de relação oposta
 }
 
 model Documentacao {
@@ -30,11 +51,14 @@ model Documentacao {
   info_adicionais  String?
   createdAt        DateTime @default(now())
 
-  // 🔗 Relacionamento com ERP
-  erpId Int?
-  erp   Erp? @relation(fields: [erpId], references: [id], onDelete: SetNull)
+  // 🔗 Empresa (novo)
+  empresaId Int
+  empresa   Empresa @relation(fields: [empresaId], references: [id])
 
-  // 🔗 Relacionamentos com outras tabelas (virão depois)
+  // RELACIONAMENTO INVERSO: Um ERP pode ter várias documentações
+  erpId   Int
+  erp     Erp @relation(fields: [erpId], references: [id])
+
   servicos          Servico[]
   servicosDesejados ServicoDesejado[]
 }
@@ -54,12 +78,12 @@ model Servico {
   responsavel_padrao  String?
   createdAt           DateTime @default(now())
 
-  // 🔗 Relacionamento com Documentacao
-  documentacao   Documentacao @relation(fields: [documentacaoId], references: [id])
+  // 🔗 Documentação
   documentacaoId Int
+  documentacao   Documentacao @relation(fields: [documentacaoId], references: [id])
 
-  erp Erp @relation(fields: [erpId], references: [id])
   erpId Int
+  erp   Erp @relation(fields: [erpId], references: [id])
 }
 
 model ServicoDesejado {
@@ -67,7 +91,6 @@ model ServicoDesejado {
   descricao String?
   createdAt DateTime @default(now())
 
-  // 🔗 Relacionamento com Documentacao
-  documentacao   Documentacao @relation(fields: [documentacaoId], references: [id])
   documentacaoId Int
+  documentacao   Documentacao @relation(fields: [documentacaoId], references: [id])
 }
