@@ -19,8 +19,18 @@ async function showById(id) {
     });
 }
 
+async function getErpsBySistemaId(sistemaId) {
+  return await prismaClient.sistema.findUnique({
+    where: { id: sistemaId },
+    include: {
+      erps: true,
+    },
+  });
+}
+
 export default {
     create,
     showAll,
-    showById
+    showById,
+    getErpsBySistemaId
 }

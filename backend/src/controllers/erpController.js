@@ -1,39 +1,40 @@
 import erpService from "../services/erpService.js";
 
+import prisma from "../prismaClient.js";
+
 async function create(req, res) {
-    try {
-        const { nome, sistemas } = req.body;
+  try {
+    const { nome, sistemas } = req.body;
 
-        // valida nome
-        if (!nome || nome.trim() === "") {
-            return res.status(400).json({
-                message: "O nome do ERP é obrigatório."
-            });
-        }
+    console.log("Payload recebido no ERP:", req.body);
 
-        // valida sistemas
-        if (!sistemas || !Array.isArray(sistemas) || sistemas.length === 0) {
-            return res.status(400).json({
-                message: "Informe ao menos um sistema para o ERP."
-            });
-        }
-
-        const novoErp = await erpService.create({
-            nome,
-            sistemas
-        });
-
-        return res.status(201).json(novoErp);
-
-    } catch (error) {
-        console.error("❌ ERRO AO CRIAR ERP:", error);
-
-        return res.status(500).json({
-            message: "Erro ao criar ERP!",
-            error: error.message
-        });
+    if (!nome || !Array.isArray(sistemas) || sistemas.length === 0) {
+      return res.status(400).json({
+        error: "Informe nome do ERP e ao menos um sistema"
+      });
     }
+
+    const erp = await prisma.erp.create({
+      data: {
+        nome,
+        sistemas: {
+          connect: sistemas.map(id => ({
+            id: Number(id)
+          }))
+        }
+      }
+    });
+
+    return res.json(erp);
+  } catch (error) {
+    console.error("❌ ERRO AO CRIAR ERP:", error);
+    return res.status(500).json({
+      error: "Erro interno ao criar ERP"
+    });
+  }
 }
+
+
 
 async function showAll(req, res) {
     try {

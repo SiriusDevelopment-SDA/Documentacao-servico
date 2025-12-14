@@ -61,8 +61,27 @@ async function showById(req, res) {
     }
 }
 
+async function getErpsBySistemaId(req, res) {
+  try {
+    const sistemaId = Number(req.params.id);
+
+    const sistema = await sistemaService.getErpsBySistemaId(sistemaId);
+
+    if (!sistema) {
+      return res.status(404).json({ message: "Sistema não encontrado" });
+    }
+
+    return res.json(sistema.erps);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+}
+
+
+
 export default{
     create,
     showAll, 
-    showById
+    showById,
+    getErpsBySistemaId
 }

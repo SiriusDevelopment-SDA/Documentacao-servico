@@ -100,6 +100,8 @@ async function destroy(req, res) {
     }
 }
 
+
+
 export default {
     create,
     associateErp, // Exporte a função para associar o ERP
