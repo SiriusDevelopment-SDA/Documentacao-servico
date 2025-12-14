@@ -2,17 +2,32 @@ import erpService from "../services/erpService.js";
 
 async function create(req, res) {
     try {
-        const { nome } = req.body;
+        const { nome, sistemas } = req.body;
 
+        // valida nome
         if (!nome || nome.trim() === "") {
-            return res.status(400).json({ message: "O nome do ERP é obrigatório." });
+            return res.status(400).json({
+                message: "O nome do ERP é obrigatório."
+            });
         }
 
-        const novoErp = await erpService.create({ nome });
+        // valida sistemas
+        if (!sistemas || !Array.isArray(sistemas) || sistemas.length === 0) {
+            return res.status(400).json({
+                message: "Informe ao menos um sistema para o ERP."
+            });
+        }
+
+        const novoErp = await erpService.create({
+            nome,
+            sistemas
+        });
+
         return res.status(201).json(novoErp);
 
     } catch (error) {
         console.error("❌ ERRO AO CRIAR ERP:", error);
+
         return res.status(500).json({
             message: "Erro ao criar ERP!",
             error: error.message

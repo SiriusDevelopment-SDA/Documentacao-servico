@@ -26,7 +26,7 @@ export default function Home() {
             Criar documentação
           </Link>
 
-          <Link href="/listar" className={styles.secondaryBtn}>
+          <Link href="/documentacao" className={styles.secondaryBtn}>
             Ver documentação
           </Link>
         </div>
