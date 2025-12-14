@@ -2,8 +2,7 @@
 
 import { useState, ChangeEvent, FormEvent } from "react";
 import styles from "./styles.module.scss";
-import Button from "../../../../components/ui/button/Button"
-
+import Button from "../../../../components/ui/button/Button";
 
 interface FormContratoProps {
   onSubmit: (data: FormDataProps) => void;
@@ -41,7 +40,7 @@ export default function FormContrato({ onSubmit }: FormContratoProps) {
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    onSubmit(formData);
+    onSubmit(formData); // Envia os dados sem o erpId
   }
 
   return (

@@ -29,21 +29,9 @@ model Erp {
   servicos      Servico[]
 }
 
-model Empresa {
-  id        Int      @id @default(autoincrement())
-  nome      String
-  cnpj      String?
-  createdAt DateTime @default(now())
-
-  erpId Int
-  erp   Erp @relation(fields: [erpId], references: [id])
-
-  documentacoes Documentacao[]
-}
-
 model Documentacao {
   id               Int      @id @default(autoincrement())
-  nome_empresa     String
+  nome_empresa     String   // O nome da empresa será armazenado diretamente
   nome_contratante String
   documentado_por  String
   data             DateTime
@@ -51,13 +39,9 @@ model Documentacao {
   info_adicionais  String?
   createdAt        DateTime @default(now())
 
-  // 🔗 Empresa (novo)
-  empresaId Int
-  empresa   Empresa @relation(fields: [empresaId], references: [id])
-
-  // RELACIONAMENTO INVERSO: Um ERP pode ter várias documentações
-  erpId   Int
-  erp     Erp @relation(fields: [erpId], references: [id])
+  // RELACIONAMENTO COM ERP 
+  erpId Int?
+  erp   Erp? @relation(fields: [erpId], references: [id])
 
   servicos          Servico[]
   servicosDesejados ServicoDesejado[]

@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/services/api";
 import styles from "./styles.module.scss";
-import Button from "../../../../components/ui/button/Button"
+import Button from "../../../../components/ui/button/Button";
 import Link from "next/link";
 
 interface Erp {
@@ -15,10 +15,10 @@ interface ModalERPProps {
   open: boolean;
   onClose: () => void;
   documentacaoId: string | null;
+  onSelectERP: (selectedErpId: string) => void; // Função para passar o ERP selecionado
 }
 
-export default function ModalERP({ open, onClose, documentacaoId }: ModalERPProps) {
-  // 🔥 TODOS OS HOOKS DEVEM FICAR NO TOPO, SEM CONDIÇÕES
+export default function ModalERP({ open, onClose, documentacaoId, onSelectERP }: ModalERPProps) {
   const [erps, setErps] = useState<Erp[]>([]);
   const [selectedERP, setSelectedERP] = useState<Erp | null>(null);
   const [creatingERP, setCreatingERP] = useState(false);
@@ -26,12 +26,12 @@ export default function ModalERP({ open, onClose, documentacaoId }: ModalERPProp
 
   // 🔄 Carregar ERPs
   useEffect(() => {
-    if (!open) return;           // << permitido AQUI
+    if (!open) return;
     if (!documentacaoId) return;
 
     api.get("/erp")
-      .then(res => setErps(res.data))
-      .catch(err => console.log("Erro ao carregar ERPs:", err));
+      .then((res) => setErps(res.data))
+      .catch((err) => console.log("Erro ao carregar ERPs:", err));
   }, [open, documentacaoId]);
 
   // Criar novo ERP 
@@ -44,7 +44,7 @@ export default function ModalERP({ open, onClose, documentacaoId }: ModalERPProp
         documentacaoId,
       });
 
-      setErps(prev => [...prev, res.data]);
+      setErps((prev) => [...prev, res.data]);
       setNewErpName("");
       setCreatingERP(false);
     } catch (err) {
@@ -58,11 +58,17 @@ export default function ModalERP({ open, onClose, documentacaoId }: ModalERPProp
 
     try {
       await api.delete(`/erp/${selectedERP.id}`);
-      setErps(prev => prev.filter(e => e.id !== selectedERP.id));
+      setErps((prev) => prev.filter((e) => e.id !== selectedERP.id));
       setSelectedERP(null);
     } catch (err) {
       console.log("Erro ao excluir ERP:", err);
     }
+  };
+
+  // Função chamada quando o ERP for selecionado
+  const handleSelect = (erp: Erp) => {
+    setSelectedERP(erp); // Atualiza o ERP selecionado
+    onSelectERP(erp.id); // Passa o ERP selecionado para o componente pai
   };
 
   if (!open) return null;
@@ -80,7 +86,7 @@ export default function ModalERP({ open, onClose, documentacaoId }: ModalERPProp
             <div
               key={erp.id}
               className={`${styles.erpCard} ${selectedERP?.id === erp.id ? styles.selected : ""}`}
-              onClick={() => setSelectedERP(erp)}
+              onClick={() => handleSelect(erp)} // Chama a função de seleção do ERP
             >
               <span className={styles.erpName}>{erp.nome}</span>
               <span className={styles.badge}>ATIVO</span>
@@ -111,7 +117,6 @@ export default function ModalERP({ open, onClose, documentacaoId }: ModalERPProp
               </Link>
             </div>
           )}
-
         </div>
 
         {creatingERP && (
@@ -123,17 +128,14 @@ export default function ModalERP({ open, onClose, documentacaoId }: ModalERPProp
               value={newErpName}
               onChange={(e) => setNewErpName(e.target.value)}
             />
-
             <Button variant="primary" onClick={handleAddERP}>
               Salvar
             </Button>
-
             <Button variant="danger" onClick={() => setCreatingERP(false)}>
               Cancelar
             </Button>
           </div>
         )}
-
       </div>
     </div>
   );

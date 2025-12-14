@@ -2,17 +2,47 @@ import documentacaoService from "../services/documentacaoService.js";
 
 async function create(req, res) {
   try {
-      const data = req.body;
+    const data = req.body;
 
-      const novaDocumentacao = await documentacaoService.create(data);
+    console.log("Dados recebidos para criação:", data);
 
-      return res.status(201).json(novaDocumentacao);
+    if (!data.nome_empresa || !data.nome_contratante || !data.documentado_por || !data.data) {
+      return res.status(400).json({ message: "Dados obrigatórios não foram fornecidos." });
+    }
+
+    // Criação da documentação
+    const novaDocumentacao = await documentacaoService.create(data);
+
+    console.log("Documentação criada com sucesso:", novaDocumentacao);
+    return res.status(201).json(novaDocumentacao);
 
   } catch (error) {
-      console.error("ERRO:", error);
-      return res.status(500).json({ message: "Erro ao criar documentação!", error: error.message });
+    console.error("ERRO:", error);
+    return res.status(500).json({ message: "Erro ao criar documentação!", error: error.message });
   }
 }
+
+// Função para associar ERP após criação
+async function associateErp(req, res) {
+  try {
+    const { id } = req.params; // Documentação ID
+    const { erpId } = req.body; // ERP ID que vem do frontend
+
+    // Verifica se o ERP está presente
+    if (!erpId) {
+      return res.status(400).json({ message: "ERP não foi especificado!" });
+    }
+
+    // Chama a função do service para associar o ERP
+    const updatedDocumentacao = await documentacaoService.associateErp(id, erpId);
+
+    return res.status(200).json(updatedDocumentacao);
+  } catch (error) {
+    console.error("Erro ao associar ERP:", error);
+    return res.status(500).json({ message: "Erro ao associar ERP!", error: error.message });
+  }
+}
+
 
 
 async function showAll(req, res) {
@@ -40,7 +70,6 @@ async function showById(req, res) {
         } else {
             return res.status(200).json(documentacao);
         }
-
     } catch (error) {
         return res.status(500).json({ message: "Erro ao buscar essa documentação!", error: error.message });
     }
@@ -63,7 +92,6 @@ async function destroy(req, res) {
         }
 
         return res.status(204).send();
-
     } catch (error) {
         return res.status(500).json({
             message: "Erro ao deletar essa documentação!",
@@ -74,6 +102,7 @@ async function destroy(req, res) {
 
 export default {
     create,
+    associateErp, // Exporte a função para associar o ERP
     showAll,
     showById,
     destroy
