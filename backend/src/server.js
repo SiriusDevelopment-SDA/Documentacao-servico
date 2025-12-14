@@ -7,10 +7,14 @@ import erpRoutes from "./routes/erpRoutes.js"
 import servicoRoutes from "./routes/servicoRoutes.js"
 import servicoDesejadoRoutes from "./routes/servicoDesejadoRoutes.js";
 import sistemaRoutes from "./routes/sistemaRoutes.js"
+import path from "path";
 
 const app = express();
+
 app.use(express.json());
 app.use(cors());
+
+app.use("/uploads", express.static(path.resolve("uploads")));
 app.use("/api", documentacaoRoutes);
 app.use("/api", erpRoutes);
 app.use("/api", servicoRoutes);

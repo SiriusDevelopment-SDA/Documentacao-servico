@@ -26,11 +26,22 @@ export default function Home() {
             Criar documentação
           </Link>
 
+          <Link href="/sistemas" className={styles.secondaryBtn}>
+            Ver documentações
+          </Link>
+
           <Link href="/documentacao" className={styles.secondaryBtn}>
-            Ver documentação
+           Ver regras de negócios
+          </Link>
+
+          <Link href="/documentacao" className={styles.secondaryBtn}>
+            Criar regra de negócios
+          </Link>
+
+          <Link href="/documentacao" className={styles.secondaryBtn}>
+            Sistemas
           </Link>
         </div>
-
       </div>
     </main>
   );

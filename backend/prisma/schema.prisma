@@ -10,6 +10,7 @@ datasource db {
 model Sistema {
   id    Int     @id @default(autoincrement())
   nome  String  @unique
+  logoUrl String?
   ativo Boolean @default(true)
 
   // Relacionamento muitos-para-muitos com ERPs

@@ -1,23 +1,29 @@
 import sistemaService from "../services/sistemaService.js";
 
 async function create(req, res) {
-    try {
-        const { nome } = req.body;
+  try {
+    const { nome, logoUrl } = req.body;
 
-        if (!nome) {
-            return res.status(400).json({ message: "O nome do sistema é obrigatório." });
-        }
-
-        const novoSistema = await sistemaService.create({ nome });
-        return res.status(201).json(novoSistema);
-
-    } catch (error) {
-        console.error("❌ ERRO AO CRIAR O SISTEMA:", error);
-        return res.status(500).json({
-            message: "Erro ao criar sistema!",
-            error: error.message
-        });
+    if (!nome) {
+      return res.status(400).json({
+        message: "O nome do sistema é obrigatório."
+      });
     }
+
+    const novoSistema = await sistemaService.create({
+      nome,
+      logoUrl
+    });
+
+    return res.status(201).json(novoSistema);
+
+  } catch (error) {
+    console.error("❌ ERRO AO CRIAR O SISTEMA:", error);
+    return res.status(500).json({
+      message: "Erro ao criar sistema!",
+      error: error.message
+    });
+  }
 }
 
 async function showAll(req, res) {

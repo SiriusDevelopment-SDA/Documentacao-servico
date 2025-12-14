@@ -3,7 +3,8 @@ import prismaClient from "../prismaClient.js";
 async function create(data) {
     return await prismaClient.sistema.create({
         data: {
-            nome: data.nome
+            nome: data.nome,
+            logoUrl: data.logoUrl
         }
     })
 }
