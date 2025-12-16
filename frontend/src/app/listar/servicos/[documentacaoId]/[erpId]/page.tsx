@@ -39,7 +39,8 @@ function PrintableDev({ data, services }: PrintableProps) {
       <section className={styles.printSection}>
         <h3>DADOS DO CONTRATO</h3>
         <p>
-          <strong>Nome da empresa:</strong> {data.nome_empresa ?? "Não informado"}
+          <strong>Nome da empresa:</strong>{" "}
+          {data.nome_empresa ?? "Não informado"}
         </p>
         <p>
           <strong>Nome do Contratante:</strong>{" "}
@@ -51,13 +52,16 @@ function PrintableDev({ data, services }: PrintableProps) {
         </p>
         <p>
           <strong>Data:</strong>{" "}
-          {data.data ? new Date(data.data).toLocaleDateString("pt-BR") : "Não informado"}
+          {data.data
+            ? new Date(data.data).toLocaleDateString("pt-BR")
+            : "Não informado"}
         </p>
         <p>
           <strong>ERP Selecionado:</strong> {data.erp ?? "Não informado"}
         </p>
         <p>
-          <strong>Número do Contrato:</strong> {data.numero_contrato ?? "Não informado"}
+          <strong>Número do Contrato:</strong>{" "}
+          {data.numero_contrato ?? "Não informado"}
         </p>
       </section>
 
@@ -99,7 +103,8 @@ function PrintableContract({ data, services }: PrintableProps) {
       <section className={styles.printSection}>
         <h3>DADOS DO CONTRATO</h3>
         <p>
-          <strong>Nome da empresa:</strong> {data.nome_empresa ?? "Não informado"}
+          <strong>Nome da empresa:</strong>{" "}
+          {data.nome_empresa ?? "Não informado"}
         </p>
         <p>
           <strong>Nome do Contratante:</strong>{" "}
@@ -111,13 +116,16 @@ function PrintableContract({ data, services }: PrintableProps) {
         </p>
         <p>
           <strong>Data:</strong>{" "}
-          {data.data ? new Date(data.data).toLocaleDateString("pt-BR") : "Não informado"}
+          {data.data
+            ? new Date(data.data).toLocaleDateString("pt-BR")
+            : "Não informado"}
         </p>
         <p>
           <strong>ERP Selecionado:</strong> {data.erp ?? "Não informado"}
         </p>
         <p>
-          <strong>Número do Contrato:</strong> {data.numero_contrato ?? "Não informado"}
+          <strong>Número do Contrato:</strong>{" "}
+          {data.numero_contrato ?? "Não informado"}
         </p>
       </section>
 
@@ -204,54 +212,6 @@ export default function ListarServicosPage() {
     }
   }
 
-  /* ============================================
-     GERAR PDF (MULTI-PÁGINA)
-  =============================================== */
-  const generatePDF = async (elementId: string, filename: string) => {
-    if (typeof window === "undefined") return;
-
-    const element = document.getElementById(elementId) as HTMLElement | null;
-    if (!element) {
-      alert("Prévia não carregada");
-      return;
-    }
-
-    const html2canvasModule = (await import("html2canvas")) as any;
-    const html2canvas = html2canvasModule.default || html2canvasModule;
-
-    const jspdfModule = (await import("jspdf")) as any;
-    const jsPDF = jspdfModule.jsPDF;
-
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      backgroundColor: "#ffffff",
-      useCORS: true,
-    });
-
-    const imgData = canvas.toDataURL("image/png");
-
-    const pdf = new jsPDF("p", "mm", "a4");
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-
-    const imgHeight = (canvas.height * pageWidth) / canvas.width;
-
-    let heightLeft = imgHeight;
-    let position = 0;
-
-    pdf.addImage(imgData, "PNG", 0, position, pageWidth, imgHeight);
-    heightLeft -= pageHeight;
-
-    while (heightLeft > 0) {
-      position -= pageHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, "PNG", 0, position, pageWidth, imgHeight);
-      heightLeft -= pageHeight;
-    }
-
-    pdf.save(filename);
-  };
-
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>Serviços cadastrados</h1>
@@ -266,35 +226,7 @@ export default function ListarServicosPage() {
         <strong>{nomeErp || "—"}</strong>
       </p>
 
-      {/* BOTÕES SUPERIORES */}
-      <div className={styles.previewActions}>
-        <button className={styles.yellowBtn} onClick={() => setShowDevPreview(true)}>
-          Prévia Dev
-        </button>
-
-        <button
-          className={styles.yellowBtn}
-          onClick={() => setShowContractPreview(true)}
-        >
-          Prévia Contrato
-        </button>
-
-        <button
-          className={styles.blackBtn}
-          onClick={() => generatePDF("print-dev", "registro-dev.pdf")}
-        >
-          Baixar Registro Dev
-        </button>
-
-        <button
-          className={styles.blackBtn}
-          onClick={() => generatePDF("print-contract", "contrato-servicos.pdf")}
-        >
-          Baixar Contrato
-        </button>
-      </div>
-
-      {/* BUSCA + BOTÃO */}
+      {/* BUSCA + BOTÕES */}
       <div className={styles.topActions}>
         <input
           className={styles.searchInput}
@@ -306,9 +238,14 @@ export default function ListarServicosPage() {
         <Button onClick={() => router.push(`/criar/servicos/${docId}/${erp}`)}>
           Adicionar serviço
         </Button>
+
+        {/* 🔹 BOTÃO FINALIZAR (NOVO) */}
+        <Button variant="secondary" onClick={() => router.push("/")}>
+          Finalizar
+        </Button>
       </div>
 
-      {/* LISTA DE CARDS */}
+      {/* LISTA */}
       <ul className={styles.cardsGrid}>
         {currentCards.length === 0 ? (
           <p>Nenhum serviço encontrado.</p>
@@ -317,7 +254,7 @@ export default function ListarServicosPage() {
             <li
               key={s.id}
               className={styles.cardItem}
-              onClick={() => router.push(`/servicos/${s.id}`)} // ✅ VOLTOU!
+              onClick={() => router.push(`/servicos/${s.id}`)}
             >
               <div className={styles.cardHeader}>
                 <h3>{s.nome}</h3>
@@ -334,7 +271,7 @@ export default function ListarServicosPage() {
               <button
                 className={styles.deleteBtn}
                 onClick={(e) => {
-                  e.stopPropagation(); // ✅ NÃO NAVEGA AO EXCLUIR
+                  e.stopPropagation();
                   deletar(s.id);
                 }}
               >
@@ -384,22 +321,6 @@ export default function ListarServicosPage() {
           selectedServices={servicos}
         />
       )}
-
-      {/* ÁREA DE EXPORTAÇÃO PDF (FORA DA TELA) */}
-      <div
-        style={{
-          position: "absolute",
-          left: "-10000px",
-          top: 0,
-          width: "210mm",
-          background: "#ffffff",
-          color: "#000",
-          padding: "20px",
-        }}
-      >
-        <PrintableDev data={documentacaoData} services={servicos} />
-        <PrintableContract data={documentacaoData} services={servicos} />
-      </div>
     </div>
   );
 }

@@ -106,7 +106,7 @@ export default function ListarServicosPage() {
   const [showContractPreview, setShowContractPreview] = useState(false);
 
   /* =============================
-     PAGINAÇÃO (ÚNICA ADIÇÃO)
+     PAGINAÇÃO
   ============================== */
   const ITEMS_PER_PAGE = 6;
   const [currentPage, setCurrentPage] = useState(1);
@@ -169,7 +169,25 @@ export default function ListarServicosPage() {
   );
 
   /* =============================
-     PDF (INALTERADO)
+     EXCLUIR SERVIÇO (ÚNICA ADIÇÃO FUNCIONAL)
+  ============================== */
+  const handleExcluir = async (id: number) => {
+    const confirm = window.confirm("Deseja realmente excluir este serviço?");
+    if (!confirm) return;
+
+    try {
+      await api.delete(`/servico/delete/${id}`);
+
+      setServicos((prev) => prev.filter((s) => s.id !== id));
+      setFiltered((prev) => prev.filter((s) => s.id !== id));
+    } catch (error) {
+      console.error("Erro ao excluir serviço:", error);
+      alert("Erro ao excluir serviço");
+    }
+  };
+
+  /* =============================
+     PDF
   ============================== */
   const generatePDF = async (elementId: string, filename: string) => {
     if (typeof window === "undefined") return;
@@ -285,7 +303,10 @@ export default function ListarServicosPage() {
 
               <button
                 className={styles.deleteBtn}
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleExcluir(s.id);
+                }}
               >
                 Excluir
               </button>
