@@ -106,6 +106,12 @@ export default function ListarServicosPage() {
   const [showContractPreview, setShowContractPreview] = useState(false);
 
   /* =============================
+     PAGINAÇÃO (ÚNICA ADIÇÃO)
+  ============================== */
+  const ITEMS_PER_PAGE = 6;
+  const [currentPage, setCurrentPage] = useState(1);
+
+  /* =============================
      LOAD
   ============================== */
   useEffect(() => {
@@ -124,8 +130,6 @@ export default function ListarServicosPage() {
 
         const resDoc = await api.get(`/documentacoes/${docId}`);
         setDocumentacaoData(resDoc.data);
-
-        // ✅ ALTERAÇÃO AQUI
         setNomeDocumentacao(resDoc.data.nome_contratante);
 
         const resErp = await api.get(`/erp/${erp}`);
@@ -151,10 +155,21 @@ export default function ListarServicosPage() {
         s.nome.toLowerCase().includes(search.toLowerCase())
       )
     );
+    setCurrentPage(1);
   }, [search, servicos]);
 
   /* =============================
-     PDF (ESTÁVEL)
+     PAGINAÇÃO (CÁLCULO)
+  ============================== */
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+
+  const paginatedServices = filtered.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  /* =============================
+     PDF (INALTERADO)
   ============================== */
   const generatePDF = async (elementId: string, filename: string) => {
     if (typeof window === "undefined") return;
@@ -165,9 +180,7 @@ export default function ListarServicosPage() {
       return;
     }
 
-    const html2canvas = (
-      await import("html2canvas")
-    ).default as unknown as (
+    const html2canvas = (await import("html2canvas")).default as unknown as (
       element: HTMLElement,
       options?: any
     ) => Promise<HTMLCanvasElement>;
@@ -192,12 +205,9 @@ export default function ListarServicosPage() {
 
   return (
     <div className={styles.container}>
-      {/* BOTÃO VOLTAR */}
       <button
         className={styles.backButton}
-        onClick={() =>
-          router.push(`/sistemas/${sistemaId}/erps/${erpId}`)
-        }
+        onClick={() => router.push(`/sistemas/${sistemaId}/erps/${erpId}`)}
       >
         <ArrowLeftIcon className={styles.backIcon} />
       </button>
@@ -210,12 +220,8 @@ export default function ListarServicosPage() {
         <span>{nomeErp}</span>
       </p>
 
-      {/* BOTÕES */}
       <div className={styles.previewActions}>
-        <button
-          className={styles.yellowBtn}
-          onClick={() => setShowDevPreview(true)}
-        >
+        <button className={styles.yellowBtn} onClick={() => setShowDevPreview(true)}>
           Prévia Dev
         </button>
 
@@ -241,7 +247,6 @@ export default function ListarServicosPage() {
         </button>
       </div>
 
-      {/* BUSCA */}
       <div className={styles.topActions}>
         <input
           className={styles.searchInput}
@@ -252,25 +257,26 @@ export default function ListarServicosPage() {
 
         <Button
           onClick={() =>
-            router.push(`/criar/servicos/${docId}/${erp}`)
+            router.push(
+              `/sistemas/${sistemaId}/erps/${erpId}/empresas/${empresasId}/adicionar/${docId}/${erp}`
+            )
           }
         >
           Adicionar serviço
         </Button>
       </div>
 
-      {/* CARDS */}
       <ul className={styles.cardsGrid}>
-        {filtered.length === 0 ? (
+        {paginatedServices.length === 0 ? (
           <p>Nenhum serviço encontrado.</p>
         ) : (
-          filtered.map((s) => (
+          paginatedServices.map((s) => (
             <li
               key={s.id}
               className={styles.cardItem}
               onClick={() =>
                 router.push(
-                  `/sistemas/${sistemaId}/erps/${erpId}/empresas/${docId}/servicos/${s.id}`
+                  `/sistemas/${sistemaId}/erps/${erpId}/empresas/${empresasId}/adicionar/${docId}/${erp}/servicos/${s.id}`
                 )
               }
             >
@@ -279,9 +285,7 @@ export default function ListarServicosPage() {
 
               <button
                 className={styles.deleteBtn}
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
+                onClick={(e) => e.stopPropagation()}
               >
                 Excluir
               </button>
@@ -290,7 +294,28 @@ export default function ListarServicosPage() {
         )}
       </ul>
 
-      {/* MODAIS */}
+      {totalPages > 1 && (
+        <div className={styles.pagination}>
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            Anterior
+          </button>
+
+          <span>
+            Página {currentPage} de {totalPages}
+          </span>
+
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            Próxima
+          </button>
+        </div>
+      )}
+
       {showDevPreview && (
         <PreviewDevModal
           onClose={() => setShowDevPreview(false)}
@@ -307,7 +332,6 @@ export default function ListarServicosPage() {
         />
       )}
 
-      {/* PDF INVISÍVEL */}
       <div
         style={{
           position: "fixed",

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowLeftIcon } from "lucide-react";
 import styles from "./styles.module.scss";
 
 interface Sistema {
@@ -27,6 +28,15 @@ export default function SistemasPage() {
 
   return (
     <div className={styles.container}>
+      {/* 🔙 Seta padrão → volta para Documentação de serviços */}
+      <button
+        className={styles.backButton}
+        onClick={() => router.push("/")}
+        title="Voltar para Documentação de serviços"
+      >
+        <ArrowLeftIcon />
+      </button>
+
       <div className={styles.content}>
         <h1 className={styles.title}>Escolha um sistema para continuar</h1>
 
