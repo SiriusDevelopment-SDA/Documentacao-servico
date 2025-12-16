@@ -1,0 +1,127 @@
+.container {
+  min-height: 100vh;
+  padding: 40px 32px;
+  background: linear-gradient(
+    90deg,
+    #1a1a1a 0%,
+    #7a5c00 45%,
+    #f4c400 100%
+  );
+  position: relative;
+}
+
+/* Conteúdo central */
+.content {
+  max-width: 1100px;
+  margin: 0 auto;
+
+  p {
+    color: #e5e5e5;
+    margin-bottom: 24px;
+  }
+}
+
+/* Título */
+.title {
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+/* Barra de busca */
+.searchBox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 14px;
+  padding: 14px 18px;
+  max-width: 420px;
+  margin-bottom: 36px;
+
+  svg {
+    color: #f4c400;
+  }
+
+  input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #ffffff;
+    font-size: 14px;
+
+    &::placeholder {
+      color: #cfcfcf;
+    }
+  }
+}
+
+/* Grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 24px;
+}
+
+/* Card */
+.card {
+  background: #ffd84d;
+  border-radius: 14px;
+  padding: 20px;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+  transition: all 0.25s ease;
+
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+    background: #ffdf66;
+  }
+}
+
+/* Loading */
+.loading {
+  color: #ffffff;
+  font-size: 16px;
+  padding: 40px;
+}
+
+/* 🔙 Botão voltar — PADRÃO DO SISTEMA */
+.backButton {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+
+  width: 44px;
+  height: 44px;
+
+  background: #f4c400;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 10px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  color: #ffffff;
+
+  transition: all 0.2s ease;
+  z-index: 20;
+
+  &:hover {
+    background: #ffd84d;
+    transform: translateY(-2px);
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}

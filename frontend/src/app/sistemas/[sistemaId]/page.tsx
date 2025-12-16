@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { ArrowLeftIcon } from "lucide-react";
 import styles from "./styles.module.scss";
 
 interface Erp {
@@ -30,7 +31,6 @@ export default function ErpsDoSistemaPage() {
         }
 
         const json = await response.json();
-
         setErps(Array.isArray(json) ? json : []);
       } catch (err) {
         console.error(err);
@@ -42,8 +42,6 @@ export default function ErpsDoSistemaPage() {
 
     carregarErps();
   }, [sistemaId]);
-
-  /* ------------------ filtro ------------------ */
 
   const erpsFiltrados = erps.filter((erp) =>
     erp.nome.toLowerCase().includes(search.toLowerCase())
@@ -71,11 +69,18 @@ export default function ErpsDoSistemaPage() {
 
   return (
     <div className={styles.container}>
+      {/* 🔙 Seta padrão → volta para /sistemas */}
+      <button
+        className={styles.backButton}
+        onClick={() => router.push("/sistemas")}
+        title="Voltar para sistemas"
+      >
+        <ArrowLeftIcon />
+      </button>
+
       <div className={styles.content}>
         <h1 className={styles.title}>ERPs do sistema</h1>
-        <p className={styles.subtitle}>
-          Selecione um ERP para continuar
-        </p>
+        <p className={styles.subtitle}>Selecione um ERP para continuar</p>
 
         {/* 🔍 Barra de pesquisa */}
         <input

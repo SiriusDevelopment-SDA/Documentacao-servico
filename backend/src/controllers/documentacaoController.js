@@ -22,26 +22,32 @@ async function create(req, res) {
   }
 }
 
-// Função para associar ERP após criação
 async function associateErp(req, res) {
   try {
-    const { id } = req.params; // Documentação ID
-    const { erpId } = req.body; // ERP ID que vem do frontend
+    const { id } = req.params;        // documentacaoId
+    const { erpId } = req.body;
 
-    // Verifica se o ERP está presente
-    if (!erpId) {
-      return res.status(400).json({ message: "ERP não foi especificado!" });
+    if (!id || !erpId) {
+      return res.status(400).json({
+        message: "documentacaoId ou erpId não informado",
+      });
     }
 
-    // Chama a função do service para associar o ERP
-    const updatedDocumentacao = await documentacaoService.associateErp(id, erpId);
+    const updated = await documentacaoService.associateErp(
+      Number(id),
+      Number(erpId)
+    );
 
-    return res.status(200).json(updatedDocumentacao);
+    return res.status(200).json(updated);
   } catch (error) {
     console.error("Erro ao associar ERP:", error);
-    return res.status(500).json({ message: "Erro ao associar ERP!", error: error.message });
+    return res.status(500).json({
+      message: "Erro ao associar ERP!",
+      error: error.message,
+    });
   }
 }
+
 
 
 

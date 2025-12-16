@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/services/api";
 import styles from "./styles.module.scss";
@@ -6,7 +7,7 @@ import Button from "../../../../components/ui/button/Button";
 import Link from "next/link";
 
 interface Erp {
-  id: string;
+  id: number;
   nome: string;
   ativo: boolean;
 }
@@ -19,15 +20,13 @@ interface Sistema {
 interface ModalERPProps {
   open: boolean;
   onClose: () => void;
-  documentacaoId: string | null;
-  onSelectERP: (selectedErpId: string) => void;
+  documentacaoId: number | null;
 }
 
 export default function ModalERP({
   open,
   onClose,
   documentacaoId,
-  onSelectERP,
 }: ModalERPProps) {
   const [erps, setErps] = useState<Erp[]>([]);
   const [sistemas, setSistemas] = useState<Sistema[]>([]);
@@ -36,6 +35,7 @@ export default function ModalERP({
   const [creatingERP, setCreatingERP] = useState(false);
   const [newErpName, setNewErpName] = useState("");
   const [openDropdown, setOpenDropdown] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const selectRef = useRef<HTMLDivElement>(null);
 
@@ -48,7 +48,7 @@ export default function ModalERP({
     api.get("/sistema").then(res => setSistemas(res.data));
   }, [open]);
 
-  /* ================= CLOSE DROPDOWN ON OUTSIDE CLICK ================= */
+  /* ================= CLOSE DROPDOWN ================= */
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -64,12 +64,37 @@ export default function ModalERP({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  /* ================= ACTIONS ================= */
+  /* ================= HELPERS ================= */
 
   const toggleSistema = (id: number) => {
     setSistemasSelecionados(prev =>
       prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
     );
+  };
+
+  /* ================= ACTIONS ================= */
+
+  const handleSelectERP = async (erp: Erp) => {
+    if (!documentacaoId) {
+      alert("ID da documentação não encontrado.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      await api.patch(
+        `/documentacoes/${documentacaoId}/associar-erp`,
+        { erpId: erp.id }
+      );
+
+      setSelectedERP(erp);
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao associar ERP à documentação.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleAddERP = async () => {
@@ -117,10 +142,7 @@ export default function ModalERP({
               className={`${styles.erpCard} ${
                 selectedERP?.id === erp.id ? styles.selected : ""
               }`}
-              onClick={() => {
-                setSelectedERP(erp);
-                onSelectERP(erp.id);
-              }}
+              onClick={() => handleSelectERP(erp)}
             >
               <span>{erp.nome}</span>
               <span className={styles.badge}>ATIVO</span>
@@ -130,7 +152,10 @@ export default function ModalERP({
 
         {/* AÇÕES */}
         <div className={styles.actionButtons}>
-          <Button variant="primary" onClick={() => setCreatingERP(true)}>
+          <Button
+            variant="primary"
+            onClick={() => setCreatingERP(true)}
+          >
             + Adicionar Novo ERP
           </Button>
 
@@ -142,10 +167,14 @@ export default function ModalERP({
             Excluir ERP
           </Button>
 
-          {selectedERP && (
+          {selectedERP && documentacaoId && (
             <div className={styles.manageSection}>
-              <Link href={`/criar/servicos/${documentacaoId}/${selectedERP.id}`}>
-                <Button variant="secondary">Gerenciar Serviços</Button>
+              <Link
+                href={`/criar/servicos/${documentacaoId}/${selectedERP.id}`}
+              >
+                <Button variant="secondary">
+                  Gerenciar Serviços
+                </Button>
               </Link>
             </div>
           )}
@@ -161,7 +190,6 @@ export default function ModalERP({
               onChange={e => setNewErpName(e.target.value)}
             />
 
-            {/* 🔥 SELECT MODERNO */}
             <div
               className={styles.systemSelect}
               ref={selectRef}
@@ -221,11 +249,16 @@ export default function ModalERP({
             <Button variant="primary" onClick={handleAddERP}>
               Salvar
             </Button>
-            <Button variant="danger" onClick={() => setCreatingERP(false)}>
+            <Button
+              variant="danger"
+              onClick={() => setCreatingERP(false)}
+            >
               Cancelar
             </Button>
           </div>
         )}
+
+        {loading && <p>Salvando ERP...</p>}
       </div>
     </div>
   );

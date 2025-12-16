@@ -14,7 +14,7 @@ export default function Page() {
 
   const handleSubmit = async (dados: any) => {
     try {
-      const response = await api.post("/documentacao", dados);
+      const response = await api.post("/documentacoes", dados);
       console.log("Form salvo!", response.data);
       setDocumentacaoId(response.data.id);
       setModalOpen(true);

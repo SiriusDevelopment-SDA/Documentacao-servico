@@ -169,9 +169,9 @@ export default function ListarServicosPage() {
         setServicos(filtrados);
         setFiltered(filtrados);
 
-        const resDoc = await api.get(`/documentacao/${docId}`);
+        const resDoc = await api.get(`/documentacoes/${docId}`);
         setDocumentacaoData(resDoc.data);
-        setNomeDocumentacao(resDoc.data.nome_contratante || resDoc.data.nome);
+        setNomeDocumentacao(resDoc.data.nome_contratante);
 
         const resErp = await api.get(`/erp/${erp}`);
         setNomeErp(resErp.data.nome);
@@ -257,9 +257,13 @@ export default function ListarServicosPage() {
       <h1 className={styles.title}>Serviços cadastrados</h1>
 
       <p className={styles.subtitle}>
-        <span>Documentação:</span> {nomeDocumentacao}
+        <span>Documentação:</span>{" "}
+        <strong>{nomeDocumentacao || "—"}</strong>
+
         <span className={styles.divider} />
-        <span>ERP:</span> {nomeErp}
+
+        <span>ERP:</span>{" "}
+        <strong>{nomeErp || "—"}</strong>
       </p>
 
       {/* BOTÕES SUPERIORES */}

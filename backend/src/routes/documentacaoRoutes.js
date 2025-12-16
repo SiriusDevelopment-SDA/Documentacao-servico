@@ -3,15 +3,13 @@ import { Router } from "express";
 
 const router = Router();
 
-// Rota para criar documentação
-router.post("/documentacao", documentacaoController.create);
+// CRUD
+router.post("/documentacoes", documentacaoController.create);
+router.get("/documentacoes", documentacaoController.showAll);
+router.get("/documentacoes/:id", documentacaoController.showById);
+router.delete("/documentacoes/:id", documentacaoController.destroy);
 
-// Rota para associar ERP à documentação
-router.patch("/documentacao/associar-erp", documentacaoController.associateErp);  // PATCH para associar ERP
-
-// Outras rotas de visualização
-router.get("/documentacao", documentacaoController.showAll);
-router.get("/documentacao/:id", documentacaoController.showById);
-router.delete("/documentacao/:id", documentacaoController.destroy);
+// ✅ Associar ERP à documentação (depois de criar)
+router.patch("/documentacoes/:id/associar-erp", documentacaoController.associateErp);
 
 export default router;

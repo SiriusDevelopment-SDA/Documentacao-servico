@@ -37,9 +37,28 @@ async function destroy(id) {
     });
 }
 
+async function getEmpresasByErpId(erpId) {
+  return await prismaClient.documentacao.findMany({
+    where: {
+      erpId
+    },
+    select: {
+      id: true,
+      nome_contratante: true,
+      numero_contrato: true,
+      documentado_por: true
+    },
+    orderBy: {
+      createdAt: "desc"
+    }
+  });
+}
+
+
 export default {
     create,
     showAll,
     showById,
-    destroy
+    destroy,
+    getEmpresasByErpId
 };

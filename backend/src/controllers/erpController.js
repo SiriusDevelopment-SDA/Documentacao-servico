@@ -93,9 +93,45 @@ async function destroy(req, res) {
     }
 }
 
+
+async function getEmpresasByErp(req, res) {
+  try {
+    const erpId = Number(req.params.erpId);
+
+    if (isNaN(erpId)) {
+      return res.status(400).json({ message: "ID do ERP inválido" });
+    }
+
+    const empresas = await prisma.documentacao.findMany({
+      where: {
+        erpId: erpId
+      },
+      distinct: ["nome_contratante"],
+      select: {
+        id: true,                 // ✅ ID DA DOCUMENTAÇÃO
+        nome_contratante: true    // ✅ NOME DA EMPRESA
+      }
+    });
+
+    // 🔁 Padroniza o payload para o frontend
+    const response = empresas.map(e => ({
+      documentacaoId: e.id,
+      nome_contratante: e.nome_contratante
+    }));
+
+    return res.status(200).json(response);
+  } catch (error) {
+    console.error("Erro ao buscar contratantes:", error);
+    return res.status(500).json({
+      message: "Erro ao buscar contratantes"
+    });
+  }
+}
+
 export default {
     create,
     showAll,
     showById,
-    destroy
+    destroy,
+    getEmpresasByErp
 };

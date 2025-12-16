@@ -4,6 +4,9 @@
   justify-content: center;
   align-items: center;
   color: #fff;
+
+  /* necessário para posicionar a seta */
+  position: relative;
 }
 
 .content {
@@ -23,7 +26,7 @@
   margin-bottom: 30px;
 }
 
-/* (opcional) barra de busca de ERPs */
+/* Barra de busca de ERPs */
 .search {
   width: 100%;
   max-width: 360px;
@@ -75,3 +78,37 @@
   height: 44px;
   object-fit: contain;
 }
+
+.backButton {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+
+  width: 44px;
+  height: 44px;
+
+  background: #d4b23a; /* ✅ cor da imagem */
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 10px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  color: #ffffff;
+
+  transition: all 0.2s ease;
+  z-index: 20;
+
+  &:hover {
+    background: #e0c55a; /* leve clareada no hover */
+    transform: translateY(-2px);
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+

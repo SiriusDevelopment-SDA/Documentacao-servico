@@ -1,0 +1,48 @@
+.container {
+  max-width: 1100px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.title {
+  font-size: 38px;
+  font-weight: 800;
+  margin: 20px 0 30px;
+  color: #fff;
+}
+
+.infoCard {
+  background: var(--yellow-400);
+  padding: 25px;
+  border-radius: 16px;
+  border: 1px solid #ffffff20;
+  color: var(--dark-900);
+
+  p {
+    margin-bottom: 12px;
+    font-size: 16px;
+  }
+}
+
+.block {
+  background: var(--white);
+  padding: 14px;
+  border-radius: 10px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-x: auto;
+  border: 1px solid #ffffff20;
+  margin-bottom: 20px;
+}
+
+.actions {
+  margin-top: 25px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.loading {
+  color: white;
+  text-align: center;
+  margin-top: 30px;
+}

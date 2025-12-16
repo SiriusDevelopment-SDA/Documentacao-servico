@@ -2,6 +2,7 @@ import prismaClient from "../prismaClient.js";
 
 async function create(data) {
   console.log("Recebendo dados para criar documentação:", data);
+
   return await prismaClient.documentacao.create({
     data: {
       nome_empresa: data.nome_empresa,
@@ -14,19 +15,13 @@ async function create(data) {
   });
 }
 
-
-// Função para associar ERP à documentação após a criação
 async function associateErp(documentacaoId, erpId) {
-    console.log("Associando ERP com a documentação:", documentacaoId, erpId);
-
-    return await prismaClient.documentacao.update({
-        where: { id: documentacaoId },
-        data: {
-            erp: {
-                connect: { id: erpId }  // Conectando o ERP selecionado à documentação
-            }
-        }
-    });
+  return prismaClient.documentacao.update({
+    where: { id: documentacaoId },
+    data: {
+      erpId: erpId, 
+    },
+  });
 }
 
 
@@ -36,12 +31,14 @@ async function showAll() {
 
 async function showById(id) {
   return await prismaClient.documentacao.findUnique({
-    where: { id }
+    where: { id: Number(id) }
   });
 }
 
 async function destroy(id) {
-  return await prismaClient.documentacao.delete({ where: { id } });
+  return await prismaClient.documentacao.delete({
+    where: { id: Number(id) }
+  });
 }
 
 export default {
