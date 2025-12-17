@@ -8,10 +8,10 @@ datasource db {
 }
 
 model Sistema {
-  id    Int     @id @default(autoincrement())
-  nome  String  @unique
+  id      Int     @id @default(autoincrement())
+  nome    String  @unique
   logoUrl String?
-  ativo Boolean @default(true)
+  ativo   Boolean @default(true)
 
   // Relacionamento muitos-para-muitos com ERPs
   erps Erp[] @relation("SistemaErps")
@@ -32,7 +32,7 @@ model Erp {
 
 model Documentacao {
   id               Int      @id @default(autoincrement())
-  nome_empresa     String   // O nome da empresa será armazenado diretamente
+  nome_empresa     String // O nome da empresa será armazenado diretamente
   nome_contratante String
   documentado_por  String
   data             DateTime
@@ -78,4 +78,9 @@ model ServicoDesejado {
 
   documentacaoId Int
   documentacao   Documentacao @relation(fields: [documentacaoId], references: [id])
+}
+
+model NomeServico {
+  id Int @id @default(autoincrement())
+  nome String
 }

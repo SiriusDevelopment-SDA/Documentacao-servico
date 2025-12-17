@@ -7,6 +7,7 @@ import erpRoutes from "./routes/erpRoutes.js"
 import servicoRoutes from "./routes/servicoRoutes.js"
 import servicoDesejadoRoutes from "./routes/servicoDesejadoRoutes.js";
 import sistemaRoutes from "./routes/sistemaRoutes.js"
+import nomeServicoRoutes from "./routes/nomeServicoRoutes.js";
 import path from "path";
 
 const app = express();
@@ -20,6 +21,7 @@ app.use("/api", erpRoutes);
 app.use("/api", servicoRoutes);
 app.use("/api", servicoDesejadoRoutes);
 app.use("/api", sistemaRoutes);
+app.use("/api", nomeServicoRoutes);
 
 
 const PORT = process.env.PORT || 3333;
