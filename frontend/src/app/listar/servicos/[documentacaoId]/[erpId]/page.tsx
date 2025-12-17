@@ -10,13 +10,22 @@ import Button from "@/components/ui/button/Button";
 import PreviewDevModal from "../../../components/modals/PreviewDevModal";
 import PreviewContractModal from "../../../components/modals/PreviewContractModal";
 
-interface Servico {
+/* ===============================
+   TIPAGENS
+================================ */
+interface NomeServico {
   id: number;
   nome: string;
+}
+
+interface Servico {
+  id: number;
   descricao?: string;
   parametros_padrao?: any;
   documentacaoId: number;
   erpId: number;
+  nomeServicoId?: number;
+  nomeServico?: NomeServico; // 🔹 relação
 }
 
 interface PrintableProps {
@@ -38,31 +47,16 @@ function PrintableDev({ data, services }: PrintableProps) {
 
       <section className={styles.printSection}>
         <h3>DADOS DO CONTRATO</h3>
-        <p>
-          <strong>Nome da empresa:</strong>{" "}
-          {data.nome_empresa ?? "Não informado"}
-        </p>
-        <p>
-          <strong>Nome do Contratante:</strong>{" "}
-          {data.nome_contratante ?? "Não informado"}
-        </p>
-        <p>
-          <strong>Documentado por:</strong>{" "}
-          {data.documentado_por ?? "Não informado"}
-        </p>
+
+        <p><strong>Nome da empresa:</strong> {data.nome_empresa ?? "Não informado"}</p>
+        <p><strong>Nome do Contratante:</strong> {data.nome_contratante ?? "Não informado"}</p>
+        <p><strong>Documentado por:</strong> {data.documentado_por ?? "Não informado"}</p>
         <p>
           <strong>Data:</strong>{" "}
-          {data.data
-            ? new Date(data.data).toLocaleDateString("pt-BR")
-            : "Não informado"}
+          {data.data ? new Date(data.data).toLocaleDateString("pt-BR") : "Não informado"}
         </p>
-        <p>
-          <strong>ERP Selecionado:</strong> {data.erp ?? "Não informado"}
-        </p>
-        <p>
-          <strong>Número do Contrato:</strong>{" "}
-          {data.numero_contrato ?? "Não informado"}
-        </p>
+        <p><strong>ERP Selecionado:</strong> {data.erp ?? "Não informado"}</p>
+        <p><strong>Número do Contrato:</strong> {data.numero_contrato ?? "Não informado"}</p>
       </section>
 
       <section className={styles.printSection}>
@@ -70,7 +64,7 @@ function PrintableDev({ data, services }: PrintableProps) {
 
         {services.map((service) => (
           <div key={service.id} className={styles.printServiceBox}>
-            <h4>✓ {service.nome}</h4>
+            <h4>✓ {service.nomeServico?.nome || "Serviço sem nome"}</h4>
 
             {service.descricao && (
               <p>
@@ -102,31 +96,16 @@ function PrintableContract({ data, services }: PrintableProps) {
 
       <section className={styles.printSection}>
         <h3>DADOS DO CONTRATO</h3>
-        <p>
-          <strong>Nome da empresa:</strong>{" "}
-          {data.nome_empresa ?? "Não informado"}
-        </p>
-        <p>
-          <strong>Nome do Contratante:</strong>{" "}
-          {data.nome_contratante ?? "Não informado"}
-        </p>
-        <p>
-          <strong>Documentado por:</strong>{" "}
-          {data.documentado_por ?? "Não informado"}
-        </p>
+
+        <p><strong>Nome da empresa:</strong> {data.nome_empresa ?? "Não informado"}</p>
+        <p><strong>Nome do Contratante:</strong> {data.nome_contratante ?? "Não informado"}</p>
+        <p><strong>Documentado por:</strong> {data.documentado_por ?? "Não informado"}</p>
         <p>
           <strong>Data:</strong>{" "}
-          {data.data
-            ? new Date(data.data).toLocaleDateString("pt-BR")
-            : "Não informado"}
+          {data.data ? new Date(data.data).toLocaleDateString("pt-BR") : "Não informado"}
         </p>
-        <p>
-          <strong>ERP Selecionado:</strong> {data.erp ?? "Não informado"}
-        </p>
-        <p>
-          <strong>Número do Contrato:</strong>{" "}
-          {data.numero_contrato ?? "Não informado"}
-        </p>
+        <p><strong>ERP Selecionado:</strong> {data.erp ?? "Não informado"}</p>
+        <p><strong>Número do Contrato:</strong> {data.numero_contrato ?? "Não informado"}</p>
       </section>
 
       <section className={styles.printSection}>
@@ -134,7 +113,7 @@ function PrintableContract({ data, services }: PrintableProps) {
 
         {services.map((service) => (
           <div key={service.id} className={styles.printServiceLine}>
-            ✓ {service.nome}
+            ✓ {service.nomeServico?.nome || "Serviço sem nome"}
           </div>
         ))}
       </section>
@@ -142,6 +121,9 @@ function PrintableContract({ data, services }: PrintableProps) {
   );
 }
 
+/* ============================================
+   PAGE
+=============================================== */
 export default function ListarServicosPage() {
   const { documentacaoId, erpId } = useParams();
   const router = useRouter();
@@ -170,8 +152,11 @@ export default function ListarServicosPage() {
     async function load() {
       try {
         const resServicos = await api.get("/servico");
+
         const filtrados = resServicos.data.filter(
-          (s: Servico) => s.documentacaoId === docId && s.erpId === erp
+          (s: Servico) =>
+            Number(s.documentacaoId) === docId &&
+            Number(s.erpId) === erp
         );
 
         setServicos(filtrados);
@@ -191,10 +176,14 @@ export default function ListarServicosPage() {
     if (!Number.isNaN(docId) && !Number.isNaN(erp)) load();
   }, [docId, erp]);
 
+  /* 🔍 BUSCA PELO NOME DO SERVIÇO */
   useEffect(() => {
+    const termo = search.toLowerCase();
+
     const results = servicos.filter((s) =>
-      s.nome.toLowerCase().includes(search.toLowerCase())
+      s.nomeServico?.nome?.toLowerCase().includes(termo)
     );
+
     setFiltered(results);
     setCurrentPage(1);
   }, [search, servicos]);
@@ -217,16 +206,11 @@ export default function ListarServicosPage() {
       <h1 className={styles.title}>Serviços cadastrados</h1>
 
       <p className={styles.subtitle}>
-        <span>Documentação:</span>{" "}
-        <strong>{nomeDocumentacao || "—"}</strong>
-
+        <span>Documentação:</span> <strong>{nomeDocumentacao || "—"}</strong>
         <span className={styles.divider} />
-
-        <span>ERP:</span>{" "}
-        <strong>{nomeErp || "—"}</strong>
+        <span>ERP:</span> <strong>{nomeErp || "—"}</strong>
       </p>
 
-      {/* BUSCA + BOTÕES */}
       <div className={styles.topActions}>
         <input
           className={styles.searchInput}
@@ -239,13 +223,11 @@ export default function ListarServicosPage() {
           Adicionar serviço
         </Button>
 
-        {/* 🔹 BOTÃO FINALIZAR (NOVO) */}
         <Button variant="secondary" onClick={() => router.push("/")}>
           Finalizar
         </Button>
       </div>
 
-      {/* LISTA */}
       <ul className={styles.cardsGrid}>
         {currentCards.length === 0 ? (
           <p>Nenhum serviço encontrado.</p>
@@ -257,7 +239,7 @@ export default function ListarServicosPage() {
               onClick={() => router.push(`/servicos/${s.id}`)}
             >
               <div className={styles.cardHeader}>
-                <h3>{s.nome}</h3>
+                <h3>{s.nomeServico?.nome || "Serviço sem nome"}</h3>
               </div>
 
               <div className={styles.cardBody}>
@@ -282,7 +264,6 @@ export default function ListarServicosPage() {
         )}
       </ul>
 
-      {/* PAGINAÇÃO */}
       {filtered.length > 0 && (
         <div className={styles.pagination}>
           <button
@@ -305,7 +286,6 @@ export default function ListarServicosPage() {
         </div>
       )}
 
-      {/* MODAIS */}
       {showDevPreview && (
         <PreviewDevModal
           onClose={() => setShowDevPreview(false)}

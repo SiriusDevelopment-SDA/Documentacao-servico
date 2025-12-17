@@ -50,7 +50,12 @@ model Documentacao {
 
 model Servico {
   id                  Int      @id @default(autoincrement())
-  nome                String
+
+  // 🔗 Nome do serviço (catálogo)
+  nomeServicoId Int
+  nomeServico   NomeServico @relation(fields: [nomeServicoId], references: [id])
+
+  // 📄 Dados do serviço
   descricao           String?
   instrucoes          String?
   ativo               Boolean  @default(true)
@@ -67,6 +72,7 @@ model Servico {
   documentacaoId Int
   documentacao   Documentacao @relation(fields: [documentacaoId], references: [id])
 
+  // 🔗 ERP
   erpId Int
   erp   Erp @relation(fields: [erpId], references: [id])
 }
@@ -82,5 +88,7 @@ model ServicoDesejado {
 
 model NomeServico {
   id Int @id @default(autoincrement())
-  nome String
+  nome String @unique
+
+  servicos Servico[]
 }

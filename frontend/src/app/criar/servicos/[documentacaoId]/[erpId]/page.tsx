@@ -8,6 +8,11 @@ import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/services/api";
 
+interface NomeServico {
+  id: number;
+  nome: string;
+}
+
 export default function Page() {
   const { documentacaoId, erpId } = useParams();
   const router = useRouter();
@@ -15,24 +20,15 @@ export default function Page() {
   const [documentacao, setDocumentacao] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function loadDoc() {
-      try {
-        const response = await api.get(`/documentacao/${documentacaoId}`);
-        setDocumentacao(response.data);
-      } catch (error) {
-        console.error("Erro ao carregar documentação:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
+  /* ===============================
+     MODAL
+  =============================== */
+  const [openModal, setOpenModal] = useState(false);
+  const [nomesServico, setNomesServico] = useState<NomeServico[]>([]);
 
-    if (documentacaoId) loadDoc();
-  }, [documentacaoId]);
-
-  // ===============================
-  // FORM
-  // ===============================
+  /* ===============================
+     FORM
+  =============================== */
   const [form, setForm] = useState({
     nome_servico: "",
     descricao_breve: "",
@@ -46,6 +42,40 @@ export default function Page() {
     responsavel: "",
   });
 
+  /* ===============================
+     LOAD DOCUMENTAÇÃO
+  =============================== */
+  useEffect(() => {
+    async function loadDoc() {
+      try {
+        const response = await api.get(`/documentacoes/${documentacaoId}`);
+        setDocumentacao(response.data);
+      } catch (error) {
+        console.error("Erro ao carregar documentação:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (documentacaoId) loadDoc();
+  }, [documentacaoId]);
+
+  /* ===============================
+     LOAD NOMES SERVIÇO
+  =============================== */
+  async function openServicoModal() {
+    try {
+      const response = await api.get("/nome");
+      setNomesServico(response.data);
+      setOpenModal(true);
+    } catch (error) {
+      console.error("Erro ao carregar nomes de serviço:", error);
+    }
+  }
+
+  /* ===============================
+     HANDLE CHANGE
+  =============================== */
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) {
@@ -57,9 +87,9 @@ export default function Page() {
     }));
   }
 
-  // ===============================
-  // SUBMIT
-  // ===============================
+  /* ===============================
+     SUBMIT
+  =============================== */
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
@@ -76,7 +106,7 @@ export default function Page() {
 
     try {
       await api.post("/servico", {
-        nome: form.nome_servico,
+        nomeServico: form.nome_servico,
         descricao: form.descricao_breve,
         instrucoes: form.instrucoes,
         sem_necessidade_api: form.sem_api,
@@ -91,6 +121,8 @@ export default function Page() {
       });
 
       alert("Serviço cadastrado com sucesso!");
+
+      // 🔥 REDIRECT CORRIGIDO (sem 404)
       router.push(`/listar/servicos/${documentacaoId}/${erpId}`);
     } catch (error) {
       console.error("Erro ao salvar serviço:", error);
@@ -104,31 +136,39 @@ export default function Page() {
 
   return (
     <div className={styles.wrapper}>
-
       {/* BOTÃO VOLTAR */}
-      <Link href={`/listar/servicos/${documentacaoId}/${erpId}`} className={styles.backFloating}>
+      <Link
+        href={`/listar/servicos/${documentacaoId}/${erpId}`}
+        className={styles.backFloating}
+      >
         <ArrowLeftIcon size={22} />
       </Link>
 
-      {/* =======================================
-          ⬇️ TÍTULO CORRIGIDO
-          Agora exibindo o nome_contratante
-         ======================================= */}
       <h1 className={styles.title}>
         Adicionar serviço à documentação:{" "}
         <strong>{documentacao?.nome_contratante || "—"}</strong>
       </h1>
 
       <form onSubmit={handleSubmit} className={styles.formCard}>
-        
         <label className={styles.label}>Nome do serviço</label>
-        <input
-          className={styles.input}
-          type="text"
-          name="nome_servico"
-          value={form.nome_servico}
-          onChange={handleChange}
-        />
+
+        <div className={styles.inputWithButton}>
+          <input
+            className={styles.input}
+            type="text"
+            name="nome_servico"
+            value={form.nome_servico}
+            onChange={handleChange}
+          />
+
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={openServicoModal}
+          >
+            Selecionar serviço
+          </Button>
+        </div>
 
         <label className={styles.label}>Descrição interna</label>
         <input
@@ -217,7 +257,7 @@ export default function Page() {
         />
 
         <div className={styles.actions}>
-          <Button variant="danger" onClick={() => router.back()}>
+          <Button variant="danger" type="button" onClick={() => router.back()}>
             Cancelar
           </Button>
 
@@ -226,6 +266,42 @@ export default function Page() {
           </Button>
         </div>
       </form>
+
+      {/* MODAL */}
+      {openModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <h3>Selecionar serviço</h3>
+
+            <div className={styles.modalList}>
+              {nomesServico.map((item) => (
+                <button
+                  key={item.id}
+                  className={styles.modalItem}
+                  type="button"
+                  onClick={() => {
+                    setForm((prev) => ({
+                      ...prev,
+                      nome_servico: item.nome,
+                    }));
+                    setOpenModal(false);
+                  }}
+                >
+                  {item.nome}
+                </button>
+              ))}
+            </div>
+
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setOpenModal(false)}
+            >
+              Fechar
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
