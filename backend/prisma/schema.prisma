@@ -59,6 +59,11 @@ model Servico {
   descricao           String?
   instrucoes          String?
   ativo               Boolean  @default(true)
+
+  // 🆕 Desativação (NOVO)
+  motivoDesativacao   String?
+  dataDesativacao     DateTime?
+
   sem_necessidade_api Boolean  @default(false)
   endpoint            String?
   parametros_padrao   Json?
@@ -76,6 +81,7 @@ model Servico {
   erpId Int
   erp   Erp @relation(fields: [erpId], references: [id])
 }
+
 
 model ServicoDesejado {
   id        Int      @id @default(autoincrement())
