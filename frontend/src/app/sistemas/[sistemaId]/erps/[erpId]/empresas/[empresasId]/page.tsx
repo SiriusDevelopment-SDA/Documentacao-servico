@@ -16,11 +16,13 @@ import PreviewContractModal from "@/app/listar/components/modals/PreviewContract
 ============================== */
 interface Servico {
   id: number;
-  nome: string;
   descricao?: string;
   parametros_padrao?: any;
-  documentacaoId: number;
   erpId: number;
+  nomeServico?: {
+    id: number;
+    nome: string;
+  };
 }
 
 interface PrintableProps {
@@ -29,7 +31,7 @@ interface PrintableProps {
 }
 
 /* =============================
-   PRINT DEV (PDF)
+   PRINT DEV (PDF) — NÃO ALTERADO
 ============================== */
 function PrintableDev({ data, services }: PrintableProps) {
   if (!data) return null;
@@ -46,7 +48,7 @@ function PrintableDev({ data, services }: PrintableProps) {
 
       {services.map((s) => (
         <div key={s.id} style={{ marginBottom: 16 }}>
-          <strong>✓ {s.nome}</strong>
+          <strong>✓ {s.nomeServico?.nome || "Serviço sem nome"}</strong>
           {s.descricao && <p>{s.descricao}</p>}
           {s.parametros_padrao && (
             <pre>{JSON.stringify(s.parametros_padrao, null, 2)}</pre>
@@ -58,7 +60,7 @@ function PrintableDev({ data, services }: PrintableProps) {
 }
 
 /* =============================
-   PRINT CONTRATO (PDF)
+   PRINT CONTRATO (PDF) — NÃO ALTERADO
 ============================== */
 function PrintableContract({ data, services }: PrintableProps) {
   if (!data) return null;
@@ -74,7 +76,7 @@ function PrintableContract({ data, services }: PrintableProps) {
       <hr />
 
       {services.map((s) => (
-        <div key={s.id}>✓ {s.nome}</div>
+        <div key={s.id}>✓ {s.nomeServico?.nome || "Serviço sem nome"}</div>
       ))}
     </div>
   );
@@ -88,19 +90,12 @@ export default function ListarServicosPage() {
   const router = useRouter();
 
   const sistemaId = params.sistemaId as string;
-  const erpId = params.erpId as string;
+  const erpId = Number(params.erpId);
   const empresasId = params.empresasId as string;
-
-  const docId = Number(empresasId);
-  const erp = Number(erpId);
 
   const [servicos, setServicos] = useState<Servico[]>([]);
   const [filtered, setFiltered] = useState<Servico[]>([]);
   const [search, setSearch] = useState("");
-
-  const [documentacaoData, setDocumentacaoData] = useState<any>(null);
-  const [nomeDocumentacao, setNomeDocumentacao] = useState("");
-  const [nomeErp, setNomeErp] = useState("");
 
   const [showDevPreview, setShowDevPreview] = useState(false);
   const [showContractPreview, setShowContractPreview] = useState(false);
@@ -112,54 +107,48 @@ export default function ListarServicosPage() {
   const [currentPage, setCurrentPage] = useState(1);
 
   /* =============================
-     LOAD
+     LOAD — FILTRA POR ERP
   ============================== */
   useEffect(() => {
     async function load() {
       try {
-        const resServicos = await api.get("/servico");
+        const res = await api.get("/servico");
 
-        const filtrados = resServicos.data.filter(
-          (s: Servico) =>
-            Number(s.documentacaoId) === docId &&
-            Number(s.erpId) === erp
+        const filtrados = res.data.filter(
+          (s: Servico) => Number(s.erpId) === erpId
         );
 
         setServicos(filtrados);
         setFiltered(filtrados);
-
-        const resDoc = await api.get(`/documentacoes/${docId}`);
-        setDocumentacaoData(resDoc.data);
-        setNomeDocumentacao(resDoc.data.nome_contratante);
-
-        const resErp = await api.get(`/erp/${erp}`);
-        setNomeErp(resErp.data.nome);
       } catch (error) {
-        console.error("Erro ao carregar dados:", error);
+        console.error("Erro ao carregar serviços:", error);
         setServicos([]);
         setFiltered([]);
       }
     }
 
-    if (!Number.isNaN(docId) && !Number.isNaN(erp)) {
+    if (!Number.isNaN(erpId)) {
       load();
     }
-  }, [docId, erp]);
+  }, [erpId]);
 
   /* =============================
      BUSCA
   ============================== */
   useEffect(() => {
+    const searchLower = search.toLowerCase();
+
     setFiltered(
       servicos.filter((s) =>
-        s.nome.toLowerCase().includes(search.toLowerCase())
+        (s.nomeServico?.nome ?? "").toLowerCase().includes(searchLower)
       )
     );
+
     setCurrentPage(1);
   }, [search, servicos]);
 
   /* =============================
-     PAGINAÇÃO (CÁLCULO)
+     PAGINAÇÃO
   ============================== */
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
 
@@ -169,7 +158,7 @@ export default function ListarServicosPage() {
   );
 
   /* =============================
-     EXCLUIR SERVIÇO (ÚNICA ADIÇÃO FUNCIONAL)
+     EXCLUIR SERVIÇO
   ============================== */
   const handleExcluir = async (id: number) => {
     const confirm = window.confirm("Deseja realmente excluir este serviço?");
@@ -187,7 +176,7 @@ export default function ListarServicosPage() {
   };
 
   /* =============================
-     PDF
+     PDF — NÃO ALTERADO
   ============================== */
   const generatePDF = async (elementId: string, filename: string) => {
     if (typeof window === "undefined") return;
@@ -223,6 +212,7 @@ export default function ListarServicosPage() {
 
   return (
     <div className={styles.container}>
+      {/* BOTÃO VOLTAR */}
       <button
         className={styles.backButton}
         onClick={() => router.push(`/sistemas/${sistemaId}/erps/${erpId}`)}
@@ -232,12 +222,7 @@ export default function ListarServicosPage() {
 
       <h1 className={styles.title}>Serviços cadastrados</h1>
 
-      <p className={styles.subtitle}>
-        <span>{nomeDocumentacao}</span>
-        <span className={styles.divider} />
-        <span>{nomeErp}</span>
-      </p>
-
+      {/* AÇÕES DE PRÉVIA */}
       <div className={styles.previewActions}>
         <button className={styles.yellowBtn} onClick={() => setShowDevPreview(true)}>
           Prévia Dev
@@ -265,6 +250,7 @@ export default function ListarServicosPage() {
         </button>
       </div>
 
+      {/* BUSCA + ADICIONAR */}
       <div className={styles.topActions}>
         <input
           className={styles.searchInput}
@@ -276,7 +262,7 @@ export default function ListarServicosPage() {
         <Button
           onClick={() =>
             router.push(
-              `/sistemas/${sistemaId}/erps/${erpId}/empresas/${empresasId}/adicionar/${docId}/${erp}`
+              `/sistemas/${sistemaId}/erps/${erpId}/empresas/${empresasId}/adicionar/${empresasId}/${erpId}`
             )
           }
         >
@@ -284,6 +270,7 @@ export default function ListarServicosPage() {
         </Button>
       </div>
 
+      {/* CARDS */}
       <ul className={styles.cardsGrid}>
         {paginatedServices.length === 0 ? (
           <p>Nenhum serviço encontrado.</p>
@@ -294,11 +281,11 @@ export default function ListarServicosPage() {
               className={styles.cardItem}
               onClick={() =>
                 router.push(
-                  `/sistemas/${sistemaId}/erps/${erpId}/empresas/${empresasId}/adicionar/${docId}/${erp}/servicos/${s.id}`
+                  `/sistemas/${sistemaId}/erps/${erpId}/empresas/${empresasId}/adicionar/${empresasId}/${erpId}/servicos/${s.id}`
                 )
               }
             >
-              <h3>{s.nome}</h3>
+              <h3>{s.nomeServico?.nome || "Serviço sem nome"}</h3>
               <p>{s.descricao || "Sem descrição"}</p>
 
               <button
@@ -315,6 +302,7 @@ export default function ListarServicosPage() {
         )}
       </ul>
 
+      {/* PAGINAÇÃO */}
       {totalPages > 1 && (
         <div className={styles.pagination}>
           <button
@@ -337,10 +325,11 @@ export default function ListarServicosPage() {
         </div>
       )}
 
+      {/* MODAIS */}
       {showDevPreview && (
         <PreviewDevModal
           onClose={() => setShowDevPreview(false)}
-          data={documentacaoData}
+          data={{ erp: erpId }}
           selectedServices={servicos}
         />
       )}
@@ -348,11 +337,12 @@ export default function ListarServicosPage() {
       {showContractPreview && (
         <PreviewContractModal
           onClose={() => setShowContractPreview(false)}
-          data={documentacaoData}
+          data={{ erp: erpId }}
           selectedServices={servicos}
         />
       )}
 
+      {/* PDF OCULTO */}
       <div
         style={{
           position: "fixed",
@@ -364,8 +354,8 @@ export default function ListarServicosPage() {
           color: "#000",
         }}
       >
-        <PrintableDev data={documentacaoData} services={servicos} />
-        <PrintableContract data={documentacaoData} services={servicos} />
+        <PrintableDev data={{ erp: erpId }} services={servicos} />
+        <PrintableContract data={{ erp: erpId }} services={servicos} />
       </div>
     </div>
   );

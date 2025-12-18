@@ -8,52 +8,37 @@ import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/services/api";
 
+interface NomeServico {
+  id: number;
+  nome: string;
+}
+
 export default function Page() {
-  const params = useParams() as Record<string, string | string[]>;
-
-  // ✅ pega ids de forma robusta (não quebra se o slug tiver nome diferente)
-  const sistemaId = String(params.sistemaId ?? "");
-  const erpId = String(params.erpId ?? ""); // ERP do sistema (pasta /erps/[erpId])
-
-  // sua pasta é [empresasId] (plural) — mas deixo fallback pra empresaId
-  const empresasId = String(params.empresasId ?? params.empresaId ?? "");
-
-  // sua doc pode estar como [docId] ou [documentacaoId]
-  const documentacaoId = String(params.docId ?? params.documentacaoId ?? "");
-
-  // último slug depois de docId (no seu print é ".../adicionar/21/12")
-  // ele NÃO pode ser erpId de novo, então provavelmente é [erp]
-  const erpParam = String(params.erp ?? params.erpServicoId ?? params.erpFinal ?? params.erp2 ?? "");
-
-  // ERP que você quer salvar no POST:
-  // se existir erpParam, usa ele; senão usa o erpId do caminho
-  const erpToUse = erpParam || erpId;
+  const {
+    sistemaId,
+    erpId,
+    empresaId,
+    docId,
+    erpServicoId,
+  } = useParams();
 
   const router = useRouter();
+
+  const documentacaoId = Number(docId);
+  const erpIdNumber = Number(erpId);
 
   const [documentacao, setDocumentacao] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function loadDoc() {
-      try {
-        const response = await api.get(`/documentacao/${documentacaoId}`);
-        setDocumentacao(response.data);
-      } catch (error) {
-        console.error("Erro ao carregar documentação:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
+  /* ===============================
+     MODAL
+  =============================== */
+  const [openModal, setOpenModal] = useState(false);
+  const [nomesServico, setNomesServico] = useState<NomeServico[]>([]);
 
-    // ✅ só tenta buscar quando tiver o id
-    if (documentacaoId) loadDoc();
-    else setLoading(false);
-  }, [documentacaoId]);
-
-  // ===============================
-  // FORM
-  // ===============================
+  /* ===============================
+     FORM
+  =============================== */
   const [form, setForm] = useState({
     nome_servico: "",
     descricao_breve: "",
@@ -67,6 +52,40 @@ export default function Page() {
     responsavel: "",
   });
 
+  /* ===============================
+     LOAD DOCUMENTAÇÃO
+  =============================== */
+  useEffect(() => {
+    async function loadDoc() {
+      try {
+        const response = await api.get(`/documentacoes/${documentacaoId}`);
+        setDocumentacao(response.data);
+      } catch (error) {
+        console.error("Erro ao carregar documentação:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (!isNaN(documentacaoId)) loadDoc();
+  }, [documentacaoId]);
+
+  /* ===============================
+     LOAD NOMES SERVIÇO
+  =============================== */
+  async function openServicoModal() {
+    try {
+      const response = await api.get("/nome");
+      setNomesServico(response.data);
+      setOpenModal(true);
+    } catch (error) {
+      console.error("Erro ao carregar nomes de serviço:", error);
+    }
+  }
+
+  /* ===============================
+     HANDLE CHANGE
+  =============================== */
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) {
@@ -78,9 +97,9 @@ export default function Page() {
     }));
   }
 
-  // ===============================
-  // SUBMIT
-  // ===============================
+  /* ===============================
+     SUBMIT
+  =============================== */
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
@@ -97,7 +116,7 @@ export default function Page() {
 
     try {
       await api.post("/servico", {
-        nome: form.nome_servico,
+        nomeServico: form.nome_servico,
         descricao: form.descricao_breve,
         instrucoes: form.instrucoes,
         sem_necessidade_api: form.sem_api,
@@ -107,44 +126,30 @@ export default function Page() {
         exige_cpf_cnpj: form.exige_cpf_cnpj,
         exige_login_ativo: form.exige_login,
         responsavel_padrao: form.responsavel,
-        documentacaoId: Number(documentacaoId),
-        erpId: Number(erpToUse),
+        documentacaoId,
+        erpId: erpIdNumber,
       });
 
       alert("Serviço cadastrado com sucesso!");
 
-      // ✅ volta para a tela da primeira imagem
-      router.push(`/sistemas/${sistemaId}/erps/${erpId}/empresas/${empresasId}`);
+      router.push(
+        `/sistemas/${sistemaId}/erps/${erpId}/empresas/${empresaId}/adicionar/${docId}/${erpServicoId}`
+      );
     } catch (error) {
       console.error("Erro ao salvar serviço:", error);
       alert("Erro ao criar serviço.");
     }
   }
 
-  // ✅ se estiver faltando param essencial, avisa sem travar tudo
-  const missing =
-    !sistemaId || !erpId || !empresasId || !documentacaoId || !erpToUse;
-
   if (loading) {
     return <h1 className={styles.title}>Carregando documentação...</h1>;
   }
 
-  if (missing) {
-    return (
-      <div className={styles.wrapper}>
-        <h1 className={styles.title}>Parâmetros inválidos</h1>
-        <p style={{ color: "#fff", opacity: 0.8 }}>
-          Verifique a rota e os slugs: sistemaId, erpId, empresasId, docId e erp.
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div className={styles.wrapper}>
-      {/* BOTÃO VOLTAR (para a página da primeira imagem) */}
+      {/* BOTÃO VOLTAR */}
       <Link
-        href={`/sistemas/${sistemaId}/erps/${erpId}/empresas/${empresasId}`}
+        href={`/sistemas/${sistemaId}/erps/${erpId}/empresas/${empresaId}/adicionar/${docId}/${erpServicoId}`}
         className={styles.backFloating}
       >
         <ArrowLeftIcon size={22} />
@@ -157,13 +162,24 @@ export default function Page() {
 
       <form onSubmit={handleSubmit} className={styles.formCard}>
         <label className={styles.label}>Nome do serviço</label>
-        <input
-          className={styles.input}
-          type="text"
-          name="nome_servico"
-          value={form.nome_servico}
-          onChange={handleChange}
-        />
+
+        <div className={styles.inputWithButton}>
+          <input
+            className={styles.input}
+            type="text"
+            name="nome_servico"
+            value={form.nome_servico}
+            onChange={handleChange}
+          />
+
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={openServicoModal}
+          >
+            Selecionar serviço
+          </Button>
+        </div>
 
         <label className={styles.label}>Descrição interna</label>
         <input
@@ -252,7 +268,7 @@ export default function Page() {
         />
 
         <div className={styles.actions}>
-          <Button variant="danger" onClick={() => router.back()}>
+          <Button variant="danger" type="button" onClick={() => router.back()}>
             Cancelar
           </Button>
 
@@ -261,6 +277,42 @@ export default function Page() {
           </Button>
         </div>
       </form>
+
+      {/* MODAL */}
+      {openModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <h3>Selecionar serviço</h3>
+
+            <div className={styles.modalList}>
+              {nomesServico.map((item) => (
+                <button
+                  key={item.id}
+                  className={styles.modalItem}
+                  type="button"
+                  onClick={() => {
+                    setForm((prev) => ({
+                      ...prev,
+                      nome_servico: item.nome,
+                    }));
+                    setOpenModal(false);
+                  }}
+                >
+                  {item.nome}
+                </button>
+              ))}
+            </div>
+
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setOpenModal(false)}
+            >
+              Fechar
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
