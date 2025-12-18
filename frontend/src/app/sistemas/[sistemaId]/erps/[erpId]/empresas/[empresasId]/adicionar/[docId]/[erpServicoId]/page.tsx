@@ -14,13 +14,14 @@ interface NomeServico {
 }
 
 export default function Page() {
-  const {
-    sistemaId,
-    erpId,
-    empresaId,
-    docId,
-    erpServicoId,
-  } = useParams();
+  const params = useParams() as Record<string, string | string[]>;
+
+  const sistemaId = String(params.sistemaId ?? "");
+  const erpId = String(params.erpId ?? "");
+  // ✅ AQUI é o ponto: sua pasta é [empresasId], não [empresaId]
+  const empresasId = String(params.empresasId ?? params.empresaId ?? "");
+  const docId = String(params.docId ?? "");
+  const erpServicoId = String(params.erpServicoId ?? "");
 
   const router = useRouter();
 
@@ -132,8 +133,9 @@ export default function Page() {
 
       alert("Serviço cadastrado com sucesso!");
 
+      // Mantive seu redirect pós-submit como estava
       router.push(
-        `/sistemas/${sistemaId}/erps/${erpId}/empresas/${empresaId}/adicionar/${docId}/${erpServicoId}`
+        `/sistemas/${sistemaId}/erps/${erpId}/empresas/${empresasId}`
       );
     } catch (error) {
       console.error("Erro ao salvar serviço:", error);
@@ -147,9 +149,9 @@ export default function Page() {
 
   return (
     <div className={styles.wrapper}>
-      {/* BOTÃO VOLTAR */}
+      {/* ✅ BOTÃO VOLTAR — AGORA VOLTA PRA LISTA: /empresas/:empresasId */}
       <Link
-        href={`/sistemas/${sistemaId}/erps/${erpId}/empresas/${empresaId}/adicionar/${docId}/${erpServicoId}`}
+        href={`/sistemas/${sistemaId}/erps/${erpId}/empresas/${empresasId}`}
         className={styles.backFloating}
       >
         <ArrowLeftIcon size={22} />
@@ -172,11 +174,7 @@ export default function Page() {
             onChange={handleChange}
           />
 
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={openServicoModal}
-          >
+          <Button type="button" variant="secondary" onClick={openServicoModal}>
             Selecionar serviço
           </Button>
         </div>
@@ -268,7 +266,16 @@ export default function Page() {
         />
 
         <div className={styles.actions}>
-          <Button variant="danger" type="button" onClick={() => router.back()}>
+          {/* ✅ CANCELAR — TAMBÉM VOLTA PRA LISTA */}
+          <Button
+            variant="danger"
+            type="button"
+            onClick={() =>
+              router.push(
+                `/sistemas/${sistemaId}/erps/${erpId}/empresas/${empresasId}`
+              )
+            }
+          >
             Cancelar
           </Button>
 
