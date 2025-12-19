@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeftIcon } from "lucide-react";
 import styles from "./styles.module.scss";
+import { api } from "@/services/api";
 
 interface Sistema {
   id: number;
@@ -17,7 +18,7 @@ export default function SistemasPage() {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    fetch("http://localhost:3333/api/sistema")
+    fetch(`/${api}/sistema`)
       .then((res) => res.json())
       .then((data) => setSistemas(data));
   }, []);
