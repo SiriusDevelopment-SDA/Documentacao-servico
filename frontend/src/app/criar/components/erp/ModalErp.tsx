@@ -21,12 +21,14 @@ interface ModalERPProps {
   open: boolean;
   onClose: () => void;
   documentacaoId: number | null;
+  onSelectErp?: (erpId: number) => void; // 👈 ADICIONADO
 }
 
 export default function ModalERP({
   open,
   onClose,
   documentacaoId,
+  onSelectErp,
 }: ModalERPProps) {
   const [erps, setErps] = useState<Erp[]>([]);
   const [sistemas, setSistemas] = useState<Sistema[]>([]);
@@ -89,6 +91,10 @@ export default function ModalERP({
       );
 
       setSelectedERP(erp);
+
+      // 👇 avisa o Page
+      onSelectErp?.(erp.id);
+
     } catch (error) {
       console.error(error);
       alert("Erro ao associar ERP à documentação.");
@@ -134,7 +140,6 @@ export default function ModalERP({
         <h2>Seleção de ERP</h2>
         <hr />
 
-        {/* LISTA DE ERPS */}
         <div className={styles.erpContainer}>
           {erps.map(erp => (
             <div
@@ -150,12 +155,8 @@ export default function ModalERP({
           ))}
         </div>
 
-        {/* AÇÕES */}
         <div className={styles.actionButtons}>
-          <Button
-            variant="primary"
-            onClick={() => setCreatingERP(true)}
-          >
+          <Button variant="primary" onClick={() => setCreatingERP(true)}>
             + Adicionar Novo ERP
           </Button>
 
@@ -168,19 +169,14 @@ export default function ModalERP({
           </Button>
 
           {selectedERP && documentacaoId && (
-            <div className={styles.manageSection}>
-              <Link
-                href={`/criar/servicos/${documentacaoId}/${selectedERP.id}`}
-              >
-                <Button variant="secondary">
-                  Gerenciar Serviços
-                </Button>
-              </Link>
-            </div>
+            <Link href={`/criar/servicos/${documentacaoId}/${selectedERP.id}`}>
+              <Button variant="secondary">
+                Gerenciar Serviços
+              </Button>
+            </Link>
           )}
         </div>
 
-        {/* FORM NOVO ERP */}
         {creatingERP && (
           <div className={styles.newErpForm}>
             <input
@@ -249,6 +245,7 @@ export default function ModalERP({
             <Button variant="primary" onClick={handleAddERP}>
               Salvar
             </Button>
+
             <Button
               variant="danger"
               onClick={() => setCreatingERP(false)}
