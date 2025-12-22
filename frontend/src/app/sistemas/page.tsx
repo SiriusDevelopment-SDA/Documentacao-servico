@@ -18,7 +18,7 @@ export default function SistemasPage() {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    fetch(`/${api}/sistema`)
+    fetch(`/sistema`)
       .then((res) => res.json())
       .then((data) => setSistemas(data));
   }, []);
