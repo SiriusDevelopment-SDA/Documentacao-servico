@@ -17,11 +17,16 @@ export default function SistemasPage() {
   const [sistemas, setSistemas] = useState<Sistema[]>([]);
   const [search, setSearch] = useState("");
 
-  useEffect(() => {
-    fetch(`/sistema`)
-      .then((res) => res.json())
-      .then((data) => setSistemas(data));
-  }, []);
+useEffect(() => {
+  api.get("/sistema")
+    .then((response) => {
+      setSistemas(response.data);
+    })
+    .catch((error) => {
+      console.error("Erro ao buscar sistemas:", error);
+    });
+}, []);
+
 
   const sistemasFiltrados = sistemas.filter((s) =>
     s.nome.toLowerCase().includes(search.toLowerCase())
