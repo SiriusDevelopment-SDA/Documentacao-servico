@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeftIcon } from "lucide-react";
 import styles from "./styles.module.scss";
+import { api } from "@/services/api";
 
 interface Erp {
   id: number;
@@ -20,18 +21,15 @@ export default function ErpsDoSistemaPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (!sistemaId) return;
+
     async function carregarErps() {
       try {
-        const response = await fetch(
-          `http://localhost:3333/api/sistema/${sistemaId}/erps`
-        );
+        setLoading(true);
+        setError("");
 
-        if (!response.ok) {
-          throw new Error("Erro ao buscar ERPs do sistema");
-        }
-
-        const json = await response.json();
-        setErps(Array.isArray(json) ? json : []);
+        const response = await api.get(`/sistema/${sistemaId}/erps`);
+        setErps(Array.isArray(response.data) ? response.data : []);
       } catch (err) {
         console.error(err);
         setError("Não foi possível carregar os ERPs.");

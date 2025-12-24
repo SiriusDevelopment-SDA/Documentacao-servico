@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeftIcon, SearchIcon } from "lucide-react";
 import styles from "./styles.module.scss";
+import { api } from "@/services/api";
 
 interface Contratante {
   documentacaoId?: number;
@@ -30,18 +31,10 @@ export default function ContratantesPage() {
         setLoading(true);
         setError(null);
 
-        const res = await fetch(
-          `http://localhost:3333/api/erps/${erpId}/contratantes`,
-          { cache: "no-store" }
-        );
-
-        if (!res.ok) {
-          throw new Error("Erro ao buscar empresas");
-        }
-
-        const data = await res.json();
-        setContratantes(data);
+        const res = await api.get(`/erps/${erpId}/contratantes`);
+        setContratantes(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
+        console.error(err);
         setError("Erro ao carregar empresas");
       } finally {
         setLoading(false);
@@ -55,15 +48,19 @@ export default function ContratantesPage() {
     c.nome_contratante.toLowerCase().includes(search.toLowerCase())
   );
 
+  /* ------------------ estados ------------------ */
+
   if (loading) return <p className={styles.loading}>Carregando empresas...</p>;
   if (error) return <p className={styles.loading}>{error}</p>;
 
+  /* ------------------ render ------------------ */
+
   return (
     <div className={styles.container}>
-      {/* Botão voltar (padrão do sistema) */}
+      {/* Botão voltar */}
       <button
         className={styles.backButton}
-        onClick={() => router.push(`/sistemas/${sistemaId}`)}
+        onClick={() => router.push(`/sistemas/${sistemaId}/erps/${erpId}`)}
         title="Voltar"
       >
         <ArrowLeftIcon />
@@ -107,6 +104,13 @@ export default function ContratantesPage() {
             </button>
           ))}
         </div>
+
+        {/* Nenhum resultado */}
+        {contratantesFiltrados.length === 0 && (
+          <p style={{ color: "#fff", marginTop: 30 }}>
+            Nenhuma empresa encontrada com esse nome.
+          </p>
+        )}
       </div>
     </div>
   );
