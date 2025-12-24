@@ -17,16 +17,16 @@ export default function SistemasPage() {
   const [sistemas, setSistemas] = useState<Sistema[]>([]);
   const [search, setSearch] = useState("");
 
-useEffect(() => {
-  api.get("/sistema")
-    .then((response) => {
-      setSistemas(response.data);
-    })
-    .catch((error) => {
-      console.error("Erro ao buscar sistemas:", error);
-    });
-}, []);
-
+  useEffect(() => {
+    api
+      .get("/sistema")
+      .then((response) => {
+        setSistemas(response.data);
+      })
+      .catch((error) => {
+        console.error("Erro ao buscar sistemas:", error);
+      });
+  }, []);
 
   const sistemasFiltrados = sistemas.filter((s) =>
     s.nome.toLowerCase().includes(search.toLowerCase())
@@ -34,7 +34,7 @@ useEffect(() => {
 
   return (
     <div className={styles.container}>
-      {/* 🔙 Seta padrão → volta para Documentação de serviços */}
+      {/* 🔙 Voltar */}
       <button
         className={styles.backButton}
         onClick={() => router.push("/")}
@@ -63,11 +63,15 @@ useEffect(() => {
             >
               {sistema.logoUrl && (
                 <img
-                  src={sistema.logoUrl}
+                  src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${sistema.logoUrl}`}
                   alt={sistema.nome}
                   className={styles.logo}
+                  onError={(e) => {
+                    e.currentTarget.src = "/icons/system-default.svg";
+                  }}
                 />
               )}
+
               <span>{sistema.nome}</span>
             </button>
           ))}
