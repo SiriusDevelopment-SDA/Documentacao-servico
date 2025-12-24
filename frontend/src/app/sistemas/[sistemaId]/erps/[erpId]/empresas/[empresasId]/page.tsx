@@ -31,7 +31,7 @@ interface PrintableProps {
 }
 
 /* =============================
-   PRINT DEV (PDF) — NÃO ALTERADO
+   PRINT DEV
 ============================== */
 function PrintableDev({ data, services }: PrintableProps) {
   if (!data) return null;
@@ -60,7 +60,7 @@ function PrintableDev({ data, services }: PrintableProps) {
 }
 
 /* =============================
-   PRINT CONTRATO (PDF) — NÃO ALTERADO
+   PRINT CONTRATO
 ============================== */
 function PrintableContract({ data, services }: PrintableProps) {
   if (!data) return null;
@@ -176,7 +176,7 @@ export default function ListarServicosPage() {
   };
 
   /* =============================
-     PDF — NÃO ALTERADO
+     PDF — CORREÇÃO AQUI
   ============================== */
   const generatePDF = async (elementId: string, filename: string) => {
     if (typeof window === "undefined") return;
@@ -187,11 +187,8 @@ export default function ListarServicosPage() {
       return;
     }
 
-    const html2canvas = (await import("html2canvas")).default as unknown as (
-      element: HTMLElement,
-      options?: any
-    ) => Promise<HTMLCanvasElement>;
-
+    // ✅ CORREÇÃO: sem cast complexo (evita erro TS)
+    const html2canvas = (await import("html2canvas")).default as any;
     const { jsPDF } = await import("jspdf");
 
     const canvas = await html2canvas(element, {
@@ -224,7 +221,10 @@ export default function ListarServicosPage() {
 
       {/* AÇÕES DE PRÉVIA */}
       <div className={styles.previewActions}>
-        <button className={styles.yellowBtn} onClick={() => setShowDevPreview(true)}>
+        <button
+          className={styles.yellowBtn}
+          onClick={() => setShowDevPreview(true)}
+        >
           Prévia Dev
         </button>
 
