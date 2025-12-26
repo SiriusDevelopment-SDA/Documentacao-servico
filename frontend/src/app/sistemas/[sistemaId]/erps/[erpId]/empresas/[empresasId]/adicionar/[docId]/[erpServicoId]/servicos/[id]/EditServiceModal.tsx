@@ -11,18 +11,28 @@ interface EditServiceModalProps {
   onUpdated: () => void;
 }
 
+/**
+ * Remove campos undefined do payload
+ */
+function cleanUndefined(obj: Record<string, any>) {
+  Object.keys(obj).forEach(
+    (key) => obj[key] === undefined && delete obj[key]
+  );
+  return obj;
+}
+
 export default function EditServiceModal({
   servico,
   onClose,
   onUpdated,
 }: EditServiceModalProps) {
   const [form, setForm] = useState({
-    descricao: servico.descricao || "",
-    instrucoes: servico.instrucoes || "",
-    endpoint: servico.endpoint || "",
-    parametros: JSON.stringify(servico.parametros || {}, null, 2),
+    descricao: servico.descricao ?? "",
+    instrucoes: servico.instrucoes ?? "",
+    endpoint: servico.endpoint ?? "",
+    parametros: JSON.stringify(servico.parametros_padrao ?? {}, null, 2),
     exige_contrato: !!servico.exige_contrato,
-    exige_cnpj: !!servico.exige_cnpj,
+    exige_cnpj: !!servico.exige_cpf_cnpj,
     exige_login_ativo: !!servico.exige_login_ativo,
   });
 
@@ -42,29 +52,30 @@ export default function EditServiceModal({
   }
 
   async function handleSubmit() {
-    let parametros = {};
+    let parametros_padrao: any = null;
 
     try {
-      parametros =
+      parametros_padrao =
         form.parametros.trim() === ""
-          ? {}
+          ? null
           : JSON.parse(form.parametros);
     } catch {
       alert("JSON dos parâmetros é inválido!");
       return;
     }
 
-    try {
-      await api.put(`/servico/${servico.id}`, {
-        descricao: form.descricao,
-        instrucoes: form.instrucoes,
-        endpoint: form.endpoint,
-        parametros,
-        exige_contrato: form.exige_contrato,
-        exige_cnpj: form.exige_cnpj,
-        exige_login_ativo: form.exige_login_ativo,
-      });
+    const payload = cleanUndefined({
+      descricao: form.descricao.trim() || null,
+      instrucoes: form.instrucoes.trim() || null,
+      endpoint: form.endpoint.trim() || null,
+      parametros_padrao,
+      exige_contrato: form.exige_contrato,
+      exige_cpf_cnpj: form.exige_cnpj,
+      exige_login_ativo: form.exige_login_ativo,
+    });
 
+    try {
+      await api.put(`/servico/${servico.id}`, payload);
       onUpdated();
       onClose();
     } catch (error) {
@@ -128,7 +139,7 @@ export default function EditServiceModal({
               checked={form.exige_cnpj}
               onChange={handleChange}
             />
-            Exige CNPJ
+            Exige CPF/CNPJ
           </label>
 
           <label className={styles.checkboxGroup}>
