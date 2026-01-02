@@ -138,7 +138,7 @@ export default function EditServiceModal({
         />
 
         <div className={styles.checkboxRow}>
-          <label>
+          <label className={styles.checkboxGroup}>
             <input
               type="checkbox"
               name="exige_contrato"
@@ -148,7 +148,7 @@ export default function EditServiceModal({
             Exige contrato
           </label>
 
-          <label>
+          <label className={styles.checkboxGroup}>
             <input
               type="checkbox"
               name="exige_cpf_cnpj"
@@ -158,7 +158,7 @@ export default function EditServiceModal({
             Exige CPF/CNPJ
           </label>
 
-          <label>
+          <label className={styles.checkboxGroup}>
             <input
               type="checkbox"
               name="exige_login_ativo"
@@ -168,6 +168,7 @@ export default function EditServiceModal({
             Exige login ativo
           </label>
         </div>
+
 
         <div className={styles.actions}>
           <Button variant="danger" onClick={onClose}>
