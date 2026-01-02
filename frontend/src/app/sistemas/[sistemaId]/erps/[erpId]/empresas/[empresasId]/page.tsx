@@ -19,12 +19,25 @@ interface Servico {
   descricao?: string;
   parametros_padrao?: any;
   erpId: number;
-  nomeServico?: string; // ✅ agora é STRING
+  nomeServico?: string;
 }
 
 interface PrintableProps {
   data: any;
   services: Servico[];
+}
+
+/* =============================
+   NORMALIZA SERVIÇO (🔥 FIX REAL)
+============================== */
+function normalizeServico(s: any): Servico {
+  return {
+    ...s,
+    nomeServico:
+      typeof s.nomeServico === "string"
+        ? s.nomeServico
+        : s.nomeServico?.nome ?? "",
+  };
 }
 
 /* =============================
@@ -111,9 +124,9 @@ export default function ListarServicosPage() {
       try {
         const res = await api.get("/servico");
 
-        const filtrados = res.data.filter(
-          (s: Servico) => Number(s.erpId) === erpId
-        );
+        const filtrados = res.data
+          .filter((s: any) => Number(s.erpId) === erpId)
+          .map(normalizeServico);
 
         setServicos(filtrados);
         setFiltered(filtrados);
@@ -173,7 +186,7 @@ export default function ListarServicosPage() {
   };
 
   /* =============================
-     PDF — CORREÇÃO AQUI
+     PDF (NÃO ALTERADO)
   ============================== */
   const generatePDF = async (elementId: string, filename: string) => {
     if (typeof window === "undefined") return;
@@ -184,7 +197,6 @@ export default function ListarServicosPage() {
       return;
     }
 
-    // ✅ CORREÇÃO: sem cast complexo (evita erro TS)
     const html2canvas = (await import("html2canvas")).default as any;
     const { jsPDF } = await import("jspdf");
 
@@ -206,7 +218,7 @@ export default function ListarServicosPage() {
 
   return (
     <div className={styles.container}>
-      {/* BOTÃO VOLTAR */}
+      {/* VOLTAR */}
       <button
         className={styles.backButton}
         onClick={() => router.push(`/sistemas/${sistemaId}/erps/${erpId}`)}
@@ -216,12 +228,9 @@ export default function ListarServicosPage() {
 
       <h1 className={styles.title}>Serviços cadastrados</h1>
 
-      {/* AÇÕES DE PRÉVIA */}
+      {/* AÇÕES */}
       <div className={styles.previewActions}>
-        <button
-          className={styles.yellowBtn}
-          onClick={() => setShowDevPreview(true)}
-        >
+        <button className={styles.yellowBtn} onClick={() => setShowDevPreview(true)}>
           Prévia Dev
         </button>
 
@@ -247,7 +256,7 @@ export default function ListarServicosPage() {
         </button>
       </div>
 
-      {/* BUSCA + ADICIONAR */}
+      {/* BUSCA */}
       <div className={styles.topActions}>
         <input
           className={styles.searchInput}
