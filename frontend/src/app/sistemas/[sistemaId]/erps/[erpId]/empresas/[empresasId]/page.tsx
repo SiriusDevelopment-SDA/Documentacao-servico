@@ -19,10 +19,7 @@ interface Servico {
   descricao?: string;
   parametros_padrao?: any;
   erpId: number;
-  nomeServico?: {
-    id: number;
-    nome: string;
-  };
+  nomeServico?: string; // ✅ agora é STRING
 }
 
 interface PrintableProps {
@@ -48,7 +45,7 @@ function PrintableDev({ data, services }: PrintableProps) {
 
       {services.map((s) => (
         <div key={s.id} style={{ marginBottom: 16 }}>
-          <strong>✓ {s.nomeServico?.nome || "Serviço sem nome"}</strong>
+          <strong>✓ {s.nomeServico || "Serviço sem nome"}</strong>
           {s.descricao && <p>{s.descricao}</p>}
           {s.parametros_padrao && (
             <pre>{JSON.stringify(s.parametros_padrao, null, 2)}</pre>
@@ -76,7 +73,7 @@ function PrintableContract({ data, services }: PrintableProps) {
       <hr />
 
       {services.map((s) => (
-        <div key={s.id}>✓ {s.nomeServico?.nome || "Serviço sem nome"}</div>
+        <div key={s.id}>✓ {s.nomeServico || "Serviço sem nome"}</div>
       ))}
     </div>
   );
@@ -140,7 +137,7 @@ export default function ListarServicosPage() {
 
     setFiltered(
       servicos.filter((s) =>
-        (s.nomeServico?.nome ?? "").toLowerCase().includes(searchLower)
+        (s.nomeServico ?? "").toLowerCase().includes(searchLower)
       )
     );
 
@@ -285,7 +282,7 @@ export default function ListarServicosPage() {
                 )
               }
             >
-              <h3>{s.nomeServico?.nome || "Serviço sem nome"}</h3>
+              <h3>{s.nomeServico || "Serviço sem nome"}</h3>
               <p>{s.descricao || "Sem descrição"}</p>
 
               <button
