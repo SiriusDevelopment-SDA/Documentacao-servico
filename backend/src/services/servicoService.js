@@ -2,6 +2,22 @@ import prismaClient from "../prismaClient.js";
 
 /**
  * ===============================
+ * NORMALIZAÇÃO (🔥 PARTE MAIS IMPORTANTE)
+ * ===============================
+ * Garante que o frontend SEMPRE receba:
+ * nomeServico: string
+ */
+function normalizeServico(servico) {
+  if (!servico) return servico;
+
+  return {
+    ...servico,
+    nomeServico: servico.nomeServico?.nome ?? null,
+  };
+}
+
+/**
+ * ===============================
  * CREATE
  * ===============================
  */
@@ -10,14 +26,14 @@ async function create(data) {
     throw new Error("nomeServico é obrigatório");
   }
 
-  // 1️⃣ cria ou reutiliza o nome do serviço
+  // 🔁 cria ou reutiliza nome do serviço
   const nomeServico = await prismaClient.nomeServico.upsert({
     where: { nome: data.nomeServico },
     update: {},
     create: { nome: data.nomeServico },
   });
 
-  return await prismaClient.servico.create({
+  const servico = await prismaClient.servico.create({
     data: {
       nomeServicoId: nomeServico.id,
 
@@ -40,6 +56,8 @@ async function create(data) {
       nomeServico: true,
     },
   });
+
+  return normalizeServico(servico);
 }
 
 /**
@@ -48,11 +66,13 @@ async function create(data) {
  * ===============================
  */
 async function showAll() {
-  return await prismaClient.servico.findMany({
+  const servicos = await prismaClient.servico.findMany({
     include: {
       nomeServico: true,
     },
   });
+
+  return servicos.map(normalizeServico);
 }
 
 /**
@@ -65,12 +85,14 @@ async function showById(id) {
     throw new Error("ID inválido");
   }
 
-  return await prismaClient.servico.findUnique({
+  const servico = await prismaClient.servico.findUnique({
     where: { id: Number(id) },
     include: {
       nomeServico: true,
     },
   });
+
+  return normalizeServico(servico);
 }
 
 /**
@@ -90,7 +112,7 @@ async function destroy(id) {
 
 /**
  * ===============================
- * UPDATE (🔥 CORREÇÃO DO ERRO 400)
+ * UPDATE
  * ===============================
  */
 async function update(id, data) {
@@ -100,7 +122,7 @@ async function update(id, data) {
 
   let nomeServicoId;
 
-  // 🔁 Atualiza nome do serviço se mudar
+  // 🔁 Atualiza nome do serviço se enviado
   if (data.nomeServico) {
     const nomeServico = await prismaClient.nomeServico.upsert({
       where: { nome: data.nomeServico },
@@ -111,7 +133,7 @@ async function update(id, data) {
     nomeServicoId = nomeServico.id;
   }
 
-  // 🧼 Monta payload seguro (sem undefined)
+  // 🧼 payload seguro (remove undefined)
   const updateData = {
     ...(nomeServicoId && { nomeServicoId }),
 
@@ -127,18 +149,19 @@ async function update(id, data) {
     responsavel_padrao: data.responsavel_padrao,
   };
 
-  // ❌ remove undefined (causa do erro 400)
   Object.keys(updateData).forEach(
     (key) => updateData[key] === undefined && delete updateData[key]
   );
 
-  return await prismaClient.servico.update({
+  const servico = await prismaClient.servico.update({
     where: { id: Number(id) },
     data: updateData,
     include: {
       nomeServico: true,
     },
   });
+
+  return normalizeServico(servico);
 }
 
 /**
