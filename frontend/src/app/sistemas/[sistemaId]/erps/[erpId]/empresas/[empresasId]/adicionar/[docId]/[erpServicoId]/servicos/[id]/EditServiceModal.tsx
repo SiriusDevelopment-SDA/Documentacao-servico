@@ -27,13 +27,14 @@ export default function EditServiceModal({
   onUpdated,
 }: EditServiceModalProps) {
   const [form, setForm] = useState({
-    descricao: servico.descricao ?? "",
-    instrucoes: servico.instrucoes ?? "",
-    endpoint: servico.endpoint ?? "",
-    parametros: JSON.stringify(servico.parametros_padrao ?? {}, null, 2),
-    exige_contrato: !!servico.exige_contrato,
-    exige_cnpj: !!servico.exige_cpf_cnpj,
-    exige_login_ativo: !!servico.exige_login_ativo,
+    nomeServico: servico?.nomeServico ?? "",
+    descricao: servico?.descricao ?? "",
+    instrucoes: servico?.instrucoes ?? "",
+    endpoint: servico?.endpoint ?? "",
+    parametros: JSON.stringify(servico?.parametros_padrao ?? {}, null, 2),
+    exige_contrato: !!servico?.exige_contrato,
+    exige_cpf_cnpj: !!servico?.exige_cpf_cnpj,
+    exige_login_ativo: !!servico?.exige_login_ativo,
   });
 
   function handleChange(
@@ -52,6 +53,12 @@ export default function EditServiceModal({
   }
 
   async function handleSubmit() {
+    // 🔒 Validação básica
+    if (!form.nomeServico.trim()) {
+      alert("O nome do serviço é obrigatório.");
+      return;
+    }
+
     let parametros_padrao: any = null;
 
     try {
@@ -65,12 +72,13 @@ export default function EditServiceModal({
     }
 
     const payload = cleanUndefined({
+      nomeServico: form.nomeServico.trim(),
       descricao: form.descricao.trim() || null,
       instrucoes: form.instrucoes.trim() || null,
       endpoint: form.endpoint.trim() || null,
       parametros_padrao,
       exige_contrato: form.exige_contrato,
-      exige_cpf_cnpj: form.exige_cnpj,
+      exige_cpf_cnpj: form.exige_cpf_cnpj,
       exige_login_ativo: form.exige_login_ativo,
     });
 
@@ -89,6 +97,17 @@ export default function EditServiceModal({
       <div className={styles.modal}>
         <h2 className={styles.title}>Editar serviço</h2>
 
+        {/* 🔹 NOME DO SERVIÇO */}
+        <label className={styles.label}>Nome do serviço</label>
+        <input
+          className={styles.input}
+          name="nomeServico"
+          value={form.nomeServico}
+          onChange={handleChange}
+          placeholder="Ex: Pagamento via PIX"
+        />
+
+        {/* 🔹 DESCRIÇÃO */}
         <label className={styles.label}>Descrição</label>
         <textarea
           className={styles.textarea}
@@ -97,6 +116,7 @@ export default function EditServiceModal({
           onChange={handleChange}
         />
 
+        {/* 🔹 INSTRUÇÕES */}
         <label className={styles.label}>Instruções</label>
         <textarea
           className={styles.textarea}
@@ -105,6 +125,7 @@ export default function EditServiceModal({
           onChange={handleChange}
         />
 
+        {/* 🔹 ENDPOINT */}
         <label className={styles.label}>Endpoint</label>
         <input
           className={styles.input}
@@ -113,6 +134,7 @@ export default function EditServiceModal({
           onChange={handleChange}
         />
 
+        {/* 🔹 PARÂMETROS */}
         <label className={styles.label}>Parâmetros (JSON)</label>
         <textarea
           className={styles.textarea}
@@ -121,6 +143,7 @@ export default function EditServiceModal({
           onChange={handleChange}
         />
 
+        {/* 🔹 CHECKBOXES */}
         <div className={styles.checkboxRow}>
           <label className={styles.checkboxGroup}>
             <input
@@ -135,8 +158,8 @@ export default function EditServiceModal({
           <label className={styles.checkboxGroup}>
             <input
               type="checkbox"
-              name="exige_cnpj"
-              checked={form.exige_cnpj}
+              name="exige_cpf_cnpj"
+              checked={form.exige_cpf_cnpj}
               onChange={handleChange}
             />
             Exige CPF/CNPJ
@@ -153,6 +176,7 @@ export default function EditServiceModal({
           </label>
         </div>
 
+        {/* 🔹 AÇÕES */}
         <div className={styles.actions}>
           <Button variant="danger" onClick={onClose}>
             Cancelar

@@ -114,11 +114,12 @@ async function update(req, res) {
     if (isNaN(id))
       return res.status(400).json({ message: "ID inválido!" });
 
-    if (!data.nomeServico)
-      return res.status(400).json({ message: "O campo 'nomeServico' é obrigatório." });
-
-    if (!data.descricao)
-      return res.status(400).json({ message: "O campo 'descricao' é obrigatório." });
+    // 🔹 valida apenas se vier preenchido
+    if (data.parametros_padrao && typeof data.parametros_padrao !== "object") {
+      return res.status(400).json({
+        message: "'parametros_padrao' deve ser um JSON válido.",
+      });
+    }
 
     const servicoAtualizado = await servicoService.update(id, {
       nomeServico: data.nomeServico,
