@@ -11,9 +11,9 @@ interface EditServiceModalProps {
   onUpdated: () => void;
 }
 
-/**
- * Remove campos undefined do payload
- */
+/* ===============================
+   REMOVE UNDEFINED
+=============================== */
 function cleanUndefined(obj: Record<string, any>) {
   Object.keys(obj).forEach(
     (key) => obj[key] === undefined && delete obj[key]
@@ -27,11 +27,16 @@ export default function EditServiceModal({
   onUpdated,
 }: EditServiceModalProps) {
   const [form, setForm] = useState({
-    nomeServico: servico?.nomeServico ?? "",
+    nomeServico:
+      typeof servico?.nomeServico === "string"
+        ? servico.nomeServico
+        : servico?.nomeServico?.nome ?? "",
+
     descricao: servico?.descricao ?? "",
     instrucoes: servico?.instrucoes ?? "",
     endpoint: servico?.endpoint ?? "",
     parametros: JSON.stringify(servico?.parametros_padrao ?? {}, null, 2),
+
     exige_contrato: !!servico?.exige_contrato,
     exige_cpf_cnpj: !!servico?.exige_cpf_cnpj,
     exige_login_ativo: !!servico?.exige_login_ativo,
@@ -40,20 +45,15 @@ export default function EditServiceModal({
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) {
-    const target = e.target as HTMLInputElement | HTMLTextAreaElement;
-    const { name, value, type } = target;
+    const { name, value, type, checked } = e.target as HTMLInputElement;
 
     setForm((prev) => ({
       ...prev,
-      [name]:
-        type === "checkbox"
-          ? (target as HTMLInputElement).checked
-          : value,
+      [name]: type === "checkbox" ? checked : value,
     }));
   }
 
   async function handleSubmit() {
-    // 🔒 Validação básica
     if (!form.nomeServico.trim()) {
       alert("O nome do serviço é obrigatório.");
       return;
@@ -72,7 +72,7 @@ export default function EditServiceModal({
     }
 
     const payload = cleanUndefined({
-      nomeServico: form.nomeServico.trim(),
+      nomeServico: String(form.nomeServico).trim(),
       descricao: form.descricao.trim() || null,
       instrucoes: form.instrucoes.trim() || null,
       endpoint: form.endpoint.trim() || null,
@@ -97,17 +97,14 @@ export default function EditServiceModal({
       <div className={styles.modal}>
         <h2 className={styles.title}>Editar serviço</h2>
 
-        {/* 🔹 NOME DO SERVIÇO */}
         <label className={styles.label}>Nome do serviço</label>
         <input
           className={styles.input}
           name="nomeServico"
           value={form.nomeServico}
           onChange={handleChange}
-          placeholder="Ex: Pagamento via PIX"
         />
 
-        {/* 🔹 DESCRIÇÃO */}
         <label className={styles.label}>Descrição</label>
         <textarea
           className={styles.textarea}
@@ -116,7 +113,6 @@ export default function EditServiceModal({
           onChange={handleChange}
         />
 
-        {/* 🔹 INSTRUÇÕES */}
         <label className={styles.label}>Instruções</label>
         <textarea
           className={styles.textarea}
@@ -125,7 +121,6 @@ export default function EditServiceModal({
           onChange={handleChange}
         />
 
-        {/* 🔹 ENDPOINT */}
         <label className={styles.label}>Endpoint</label>
         <input
           className={styles.input}
@@ -134,7 +129,6 @@ export default function EditServiceModal({
           onChange={handleChange}
         />
 
-        {/* 🔹 PARÂMETROS */}
         <label className={styles.label}>Parâmetros (JSON)</label>
         <textarea
           className={styles.textarea}
@@ -143,9 +137,8 @@ export default function EditServiceModal({
           onChange={handleChange}
         />
 
-        {/* 🔹 CHECKBOXES */}
         <div className={styles.checkboxRow}>
-          <label className={styles.checkboxGroup}>
+          <label>
             <input
               type="checkbox"
               name="exige_contrato"
@@ -155,7 +148,7 @@ export default function EditServiceModal({
             Exige contrato
           </label>
 
-          <label className={styles.checkboxGroup}>
+          <label>
             <input
               type="checkbox"
               name="exige_cpf_cnpj"
@@ -165,7 +158,7 @@ export default function EditServiceModal({
             Exige CPF/CNPJ
           </label>
 
-          <label className={styles.checkboxGroup}>
+          <label>
             <input
               type="checkbox"
               name="exige_login_ativo"
@@ -176,12 +169,10 @@ export default function EditServiceModal({
           </label>
         </div>
 
-        {/* 🔹 AÇÕES */}
         <div className={styles.actions}>
           <Button variant="danger" onClick={onClose}>
             Cancelar
           </Button>
-
           <Button variant="primary" onClick={handleSubmit}>
             Salvar alterações
           </Button>

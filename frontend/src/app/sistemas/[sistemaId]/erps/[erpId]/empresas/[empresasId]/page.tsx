@@ -19,7 +19,10 @@ interface Servico {
   descricao?: string;
   parametros_padrao?: any;
   erpId: number;
-  nomeServico?: string;
+  nomeServico?: {
+    id: number;
+    nome: string;
+  };
 }
 
 interface PrintableProps {
@@ -28,20 +31,7 @@ interface PrintableProps {
 }
 
 /* =============================
-   NORMALIZA SERVIÇO (🔥 FIX REAL)
-============================== */
-function normalizeServico(s: any): Servico {
-  return {
-    ...s,
-    nomeServico:
-      typeof s.nomeServico === "string"
-        ? s.nomeServico
-        : s.nomeServico?.nome ?? "",
-  };
-}
-
-/* =============================
-   PRINT DEV
+   PRINT DEV (PDF)
 ============================== */
 function PrintableDev({ data, services }: PrintableProps) {
   if (!data) return null;
@@ -58,7 +48,7 @@ function PrintableDev({ data, services }: PrintableProps) {
 
       {services.map((s) => (
         <div key={s.id} style={{ marginBottom: 16 }}>
-          <strong>✓ {s.nomeServico || "Serviço sem nome"}</strong>
+          <strong>✓ {s.nomeServico?.nome ?? "Serviço sem nome"}</strong>
           {s.descricao && <p>{s.descricao}</p>}
           {s.parametros_padrao && (
             <pre>{JSON.stringify(s.parametros_padrao, null, 2)}</pre>
@@ -70,7 +60,7 @@ function PrintableDev({ data, services }: PrintableProps) {
 }
 
 /* =============================
-   PRINT CONTRATO
+   PRINT CONTRATO (PDF)
 ============================== */
 function PrintableContract({ data, services }: PrintableProps) {
   if (!data) return null;
@@ -86,7 +76,7 @@ function PrintableContract({ data, services }: PrintableProps) {
       <hr />
 
       {services.map((s) => (
-        <div key={s.id}>✓ {s.nomeServico || "Serviço sem nome"}</div>
+        <div key={s.id}>✓ {s.nomeServico?.nome ?? "Serviço sem nome"}</div>
       ))}
     </div>
   );
@@ -124,9 +114,9 @@ export default function ListarServicosPage() {
       try {
         const res = await api.get("/servico");
 
-        const filtrados = res.data
-          .filter((s: any) => Number(s.erpId) === erpId)
-          .map(normalizeServico);
+        const filtrados = res.data.filter(
+          (s: Servico) => Number(s.erpId) === erpId
+        );
 
         setServicos(filtrados);
         setFiltered(filtrados);
@@ -150,7 +140,7 @@ export default function ListarServicosPage() {
 
     setFiltered(
       servicos.filter((s) =>
-        (s.nomeServico ?? "").toLowerCase().includes(searchLower)
+        (s.nomeServico?.nome ?? "").toLowerCase().includes(searchLower)
       )
     );
 
@@ -223,43 +213,26 @@ export default function ListarServicosPage() {
         className={styles.backButton}
         onClick={() => router.push(`/sistemas/${sistemaId}/erps/${erpId}`)}
       >
-        <ArrowLeftIcon className={styles.backIcon} />
+        <ArrowLeftIcon />
       </button>
 
       <h1 className={styles.title}>Serviços cadastrados</h1>
 
       {/* AÇÕES */}
       <div className={styles.previewActions}>
-        <button className={styles.yellowBtn} onClick={() => setShowDevPreview(true)}>
-          Prévia Dev
-        </button>
-
-        <button
-          className={styles.yellowBtn}
-          onClick={() => setShowContractPreview(true)}
-        >
-          Prévia Contrato
-        </button>
-
-        <button
-          className={styles.blackBtn}
-          onClick={() => generatePDF("print-dev", "registro-dev.pdf")}
-        >
+        <button onClick={() => setShowDevPreview(true)}>Prévia Dev</button>
+        <button onClick={() => setShowContractPreview(true)}>Prévia Contrato</button>
+        <button onClick={() => generatePDF("print-dev", "registro-dev.pdf")}>
           Baixar Registro Dev
         </button>
-
-        <button
-          className={styles.blackBtn}
-          onClick={() => generatePDF("print-contract", "contrato.pdf")}
-        >
+        <button onClick={() => generatePDF("print-contract", "contrato.pdf")}>
           Baixar Contrato
         </button>
       </div>
 
-      {/* BUSCA */}
+      {/* BUSCA + ADD */}
       <div className={styles.topActions}>
         <input
-          className={styles.searchInput}
           placeholder="Pesquisar serviço..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -276,56 +249,42 @@ export default function ListarServicosPage() {
         </Button>
       </div>
 
-      {/* CARDS */}
+      {/* LISTAGEM */}
       <ul className={styles.cardsGrid}>
-        {paginatedServices.length === 0 ? (
-          <p>Nenhum serviço encontrado.</p>
-        ) : (
-          paginatedServices.map((s) => (
-            <li
-              key={s.id}
-              className={styles.cardItem}
-              onClick={() =>
-                router.push(
-                  `/sistemas/${sistemaId}/erps/${erpId}/empresas/${empresasId}/adicionar/${empresasId}/${erpId}/servicos/${s.id}`
-                )
-              }
-            >
-              <h3>{s.nomeServico || "Serviço sem nome"}</h3>
-              <p>{s.descricao || "Sem descrição"}</p>
+        {paginatedServices.map((s) => (
+          <li
+            key={s.id}
+            className={styles.cardItem}
+            onClick={() =>
+              router.push(
+                `/sistemas/${sistemaId}/erps/${erpId}/empresas/${empresasId}/adicionar/${empresasId}/${erpId}/servicos/${s.id}`
+              )
+            }
+          >
+            <h3>{s.nomeServico?.nome ?? "Serviço sem nome"}</h3>
+            <p>{s.descricao ?? "Sem descrição"}</p>
 
-              <button
-                className={styles.deleteBtn}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleExcluir(s.id);
-                }}
-              >
-                Excluir
-              </button>
-            </li>
-          ))
-        )}
+            <button
+              className={styles.deleteBtn}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleExcluir(s.id);
+              }}
+            >
+              Excluir
+            </button>
+          </li>
+        ))}
       </ul>
 
       {/* PAGINAÇÃO */}
       {totalPages > 1 && (
         <div className={styles.pagination}>
-          <button
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((p) => p - 1)}
-          >
+          <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>
             Anterior
           </button>
-
-          <span>
-            Página {currentPage} de {totalPages}
-          </span>
-
-          <button
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage((p) => p + 1)}
-          >
+          <span>Página {currentPage} de {totalPages}</span>
+          <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>
             Próxima
           </button>
         </div>
@@ -349,17 +308,7 @@ export default function ListarServicosPage() {
       )}
 
       {/* PDF OCULTO */}
-      <div
-        style={{
-          position: "fixed",
-          left: "-9999px",
-          top: 0,
-          width: "210mm",
-          background: "#ffffff",
-          padding: "20mm",
-          color: "#000",
-        }}
-      >
+      <div style={{ position: "fixed", left: "-9999px" }}>
         <PrintableDev data={{ erp: erpId }} services={servicos} />
         <PrintableContract data={{ erp: erpId }} services={servicos} />
       </div>
