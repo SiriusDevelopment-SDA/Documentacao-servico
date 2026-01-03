@@ -28,7 +28,7 @@ export default function PreviewContractModal({
           <p><strong>Nome do Contratante:</strong> {data.nome_contratante}</p>
           <p><strong>Documentado por:</strong> {data.documentado_por}</p>
           <p><strong>Data:</strong> {data.data}</p>
-          <p><strong>ERP Selecionado:</strong> {data.erp}</p>
+          <p><strong>ERP Selecionado:</strong> {data.nome}</p>
           <p><strong>Número do Contrato:</strong> {data.numero_contrato}</p>
         </div>
 
@@ -37,7 +37,7 @@ export default function PreviewContractModal({
 
           {selectedServices.map((service) => (
             <div key={service.id} className={styles.contractService}>
-              ✓ {service.nome}
+              ✓ {service.nomeServico}
             </div>
           ))}
         </div>

@@ -28,7 +28,7 @@ export default function PreviewDevModal({
           <p><strong>Nome do Contratante:</strong> {data.nome_contratante}</p>
           <p><strong>Documentado por:</strong> {data.documentado_por}</p>
           <p><strong>Data:</strong> {data.data}</p>
-          <p><strong>ERP Selecionado:</strong> {data.erp}</p>
+          <p><strong>ERP Selecionado:</strong> {data.nome}</p>
           <p><strong>Número do Contrato:</strong> {data.numero_contrato}</p>
         </div>
 
@@ -37,7 +37,7 @@ export default function PreviewDevModal({
 
           {selectedServices.map((service) => (
             <div key={service.id} className={styles.serviceBox}>
-              <h4>✓ {service.nome}</h4>
+              <h4>✓ {service.nomeServico}</h4>
 
               {service.descricao && (
                 <p><strong>Descrição:</strong> {service.descricao}</p>
