@@ -99,6 +99,9 @@ export default function ListarServicosPage() {
   const [showDevPreview, setShowDevPreview] = useState(false);
   const [showContractPreview, setShowContractPreview] = useState(false);
 
+  // ✅ DADOS DO CONTRATO (NOVO)
+  const [contractData, setContractData] = useState<any>(null);
+
   /* =============================
      PAGINAÇÃO
   ============================== */
@@ -163,7 +166,7 @@ export default function ListarServicosPage() {
   };
 
   /* =============================
-     PDF — SEM ERRO TS
+     PDF
   ============================== */
   const generatePDF = async (elementId: string, filename: string) => {
     if (typeof window === "undefined") return;
@@ -210,6 +213,19 @@ export default function ListarServicosPage() {
     pdf.save(filename);
   };
 
+  /* =============================
+     DADOS MOCKADOS (SEGUROS)
+     depois você liga na API
+  ============================== */
+  const buildContractData = () => ({
+    nome_empresa: "Empresa Exemplo",
+    nome_contratante: "Responsável Exemplo",
+    documentado_por: "Usuário Logado",
+    data: new Date().toLocaleDateString(),
+    numero_contrato: `ERP-${erpId}`,
+    erp: erpId,
+  });
+
   return (
     <div className={styles.container}>
       {/* VOLTAR */}
@@ -224,18 +240,33 @@ export default function ListarServicosPage() {
 
       {/* BOTÕES SUPERIORES */}
       <div className={styles.previewActions}>
-        <button className={styles.blackBtn} onClick={() => setShowDevPreview(true)}>
+        <button
+          className={styles.blackBtn}
+          onClick={() => {
+            setContractData(buildContractData());
+            setShowDevPreview(true);
+          }}
+        >
           Prévia Dev
         </button>
-        <button className={styles.blackBtn} onClick={() => setShowContractPreview(true)}>
+
+        <button
+          className={styles.blackBtn}
+          onClick={() => {
+            setContractData(buildContractData());
+            setShowContractPreview(true);
+          }}
+        >
           Prévia Contrato
         </button>
+
         <button
           className={styles.yellowBtn}
           onClick={() => generatePDF("print-dev", "registro-dev.pdf")}
         >
           Baixar Registro Dev
         </button>
+
         <button
           className={styles.yellowBtn}
           onClick={() => generatePDF("print-contract", "contrato.pdf")}
@@ -314,18 +345,18 @@ export default function ListarServicosPage() {
       )}
 
       {/* MODAIS */}
-      {showDevPreview && (
+      {showDevPreview && contractData && (
         <PreviewDevModal
           onClose={() => setShowDevPreview(false)}
-          data={{ erp: erpId }}
+          data={contractData}
           selectedServices={servicos}
         />
       )}
 
-      {showContractPreview && (
+      {showContractPreview && contractData && (
         <PreviewContractModal
           onClose={() => setShowContractPreview(false)}
-          data={{ erp: erpId }}
+          data={contractData}
           selectedServices={servicos}
         />
       )}
