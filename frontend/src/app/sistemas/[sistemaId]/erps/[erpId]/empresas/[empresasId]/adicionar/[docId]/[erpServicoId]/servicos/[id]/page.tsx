@@ -9,7 +9,7 @@ import EditServiceModal from "./EditServiceModal";
 
 interface Servico {
   id: number;
-  nome: string;
+  nomeServico: string;
   descricao: string;
   instrucoes: string;
   endpoint: string;
@@ -53,7 +53,7 @@ export default function ServiceDetailsPage() {
       </Button>
 
       {/* TÍTULO */}
-      <h1 className={styles.title}>{servico.nome}</h1>
+      <h1 className={styles.title}>{servico.nomeServico}</h1>
 
       {/* CARD DE INFORMAÇÕES */}
       <div className={styles.infoCard}>
