@@ -25,24 +25,21 @@ interface Servico {
   };
 }
 
-interface PrintableProps {
-  data: any;
-  services: Servico[];
-}
-
 /* =============================
-   PRINT DEV (PDF)
+   PDF — DEV
 ============================== */
-function PrintableDev({ data, services }: PrintableProps) {
-  if (!data) return null;
-
+function PrintableDev({
+  erpId,
+  services,
+}: {
+  erpId: number;
+  services: Servico[];
+}) {
   return (
-    <div id="print-dev">
-      <h2>PRÉVIA - REGISTRO DE DESENVOLVEDORES</h2>
-
-      <p><strong>Empresa:</strong> {data.nome_empresa}</p>
-      <p><strong>Contratante:</strong> {data.nome_contratante}</p>
-      <p><strong>ERP:</strong> {data.erp}</p>
+    <div id="print-dev" style={{ width: "210mm", padding: "20mm" }}>
+      <h2>REGISTRO DE DESENVOLVEDORES</h2>
+      <p><strong>ERP:</strong> {erpId}</p>
+      <p><strong>Data:</strong> {new Date().toLocaleDateString()}</p>
 
       <hr />
 
@@ -60,23 +57,25 @@ function PrintableDev({ data, services }: PrintableProps) {
 }
 
 /* =============================
-   PRINT CONTRATO (PDF)
+   PDF — CONTRATO
 ============================== */
-function PrintableContract({ data, services }: PrintableProps) {
-  if (!data) return null;
-
+function PrintableContract({
+  erpId,
+  services,
+}: {
+  erpId: number;
+  services: Servico[];
+}) {
   return (
-    <div id="print-contract" style={{ marginTop: 40 }}>
-      <h2>PRÉVIA - CONTRATO DE SERVIÇOS</h2>
-
-      <p><strong>Empresa:</strong> {data.nome_empresa}</p>
-      <p><strong>Contratante:</strong> {data.nome_contratante}</p>
-      <p><strong>ERP:</strong> {data.erp}</p>
+    <div id="print-contract" style={{ width: "210mm", padding: "20mm" }}>
+      <h2>CONTRATO DE SERVIÇOS</h2>
+      <p><strong>ERP:</strong> {erpId}</p>
+      <p><strong>Data:</strong> {new Date().toLocaleDateString()}</p>
 
       <hr />
 
       {services.map((s) => (
-        <div key={s.id}>✓ {s.nomeServico?.nome ?? "Serviço sem nome"}</div>
+        <p key={s.id}>✓ {s.nomeServico?.nome ?? "Serviço sem nome"}</p>
       ))}
     </div>
   );
@@ -107,43 +106,35 @@ export default function ListarServicosPage() {
   const [currentPage, setCurrentPage] = useState(1);
 
   /* =============================
-     LOAD — FILTRA POR ERP
+     LOAD
   ============================== */
   useEffect(() => {
     async function load() {
       try {
         const res = await api.get("/servico");
-
         const filtrados = res.data.filter(
           (s: Servico) => Number(s.erpId) === erpId
         );
-
         setServicos(filtrados);
         setFiltered(filtrados);
-      } catch (error) {
-        console.error("Erro ao carregar serviços:", error);
-        setServicos([]);
-        setFiltered([]);
+      } catch (err) {
+        console.error("Erro ao carregar serviços", err);
       }
     }
 
-    if (!Number.isNaN(erpId)) {
-      load();
-    }
+    if (!Number.isNaN(erpId)) load();
   }, [erpId]);
 
   /* =============================
      BUSCA
   ============================== */
   useEffect(() => {
-    const searchLower = search.toLowerCase();
-
+    const q = search.toLowerCase();
     setFiltered(
       servicos.filter((s) =>
-        (s.nomeServico?.nome ?? "").toLowerCase().includes(searchLower)
+        (s.nomeServico?.nome ?? "").toLowerCase().includes(q)
       )
     );
-
     setCurrentPage(1);
   }, [search, servicos]);
 
@@ -151,35 +142,33 @@ export default function ListarServicosPage() {
      PAGINAÇÃO
   ============================== */
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-
   const paginatedServices = filtered.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
 
   /* =============================
-     EXCLUIR SERVIÇO
+     EXCLUIR
   ============================== */
   const handleExcluir = async (id: number) => {
-    const confirm = window.confirm("Deseja realmente excluir este serviço?");
-    if (!confirm) return;
+    if (!confirm("Deseja realmente excluir este serviço?")) return;
 
     try {
       await api.delete(`/servico/delete/${id}`);
-
       setServicos((prev) => prev.filter((s) => s.id !== id));
       setFiltered((prev) => prev.filter((s) => s.id !== id));
-    } catch (error) {
-      console.error("Erro ao excluir serviço:", error);
+    } catch {
       alert("Erro ao excluir serviço");
     }
   };
 
   /* =============================
-     PDF (NÃO ALTERADO)
+     PDF — SEM ERRO TS
   ============================== */
   const generatePDF = async (elementId: string, filename: string) => {
     if (typeof window === "undefined") return;
+
+    await new Promise((r) => setTimeout(r, 300));
 
     const element = document.getElementById(elementId);
     if (!element) {
@@ -200,9 +189,24 @@ export default function ListarServicosPage() {
     const pdf = new jsPDF("p", "mm", "a4");
 
     const pageWidth = pdf.internal.pageSize.getWidth();
-    const imgHeight = (canvas.height * pageWidth) / canvas.width;
+    const pageHeight = pdf.internal.pageSize.getHeight();
 
-    pdf.addImage(imgData, "PNG", 0, 0, pageWidth, imgHeight);
+    const imgWidth = pageWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    while (heightLeft > 0) {
+      position -= pageHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+
     pdf.save(filename);
   };
 
@@ -218,14 +222,24 @@ export default function ListarServicosPage() {
 
       <h1 className={styles.title}>Serviços cadastrados</h1>
 
-      {/* AÇÕES */}
+      {/* BOTÕES SUPERIORES */}
       <div className={styles.previewActions}>
-        <button onClick={() => setShowDevPreview(true)}>Prévia Dev</button>
-        <button onClick={() => setShowContractPreview(true)}>Prévia Contrato</button>
-        <button onClick={() => generatePDF("print-dev", "registro-dev.pdf")}>
+        <button className={styles.blackBtn} onClick={() => setShowDevPreview(true)}>
+          Prévia Dev
+        </button>
+        <button className={styles.blackBtn} onClick={() => setShowContractPreview(true)}>
+          Prévia Contrato
+        </button>
+        <button
+          className={styles.yellowBtn}
+          onClick={() => generatePDF("print-dev", "registro-dev.pdf")}
+        >
           Baixar Registro Dev
         </button>
-        <button onClick={() => generatePDF("print-contract", "contrato.pdf")}>
+        <button
+          className={styles.yellowBtn}
+          onClick={() => generatePDF("print-contract", "contrato.pdf")}
+        >
           Baixar Contrato
         </button>
       </div>
@@ -233,6 +247,7 @@ export default function ListarServicosPage() {
       {/* BUSCA + ADD */}
       <div className={styles.topActions}>
         <input
+          className={styles.searchInput}
           placeholder="Pesquisar serviço..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -280,11 +295,19 @@ export default function ListarServicosPage() {
       {/* PAGINAÇÃO */}
       {totalPages > 1 && (
         <div className={styles.pagination}>
-          <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
             Anterior
           </button>
-          <span>Página {currentPage} de {totalPages}</span>
-          <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>
+          <span>
+            Página {currentPage} de {totalPages}
+          </span>
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
             Próxima
           </button>
         </div>
@@ -308,9 +331,9 @@ export default function ListarServicosPage() {
       )}
 
       {/* PDF OCULTO */}
-      <div style={{ position: "fixed", left: "-9999px" }}>
-        <PrintableDev data={{ erp: erpId }} services={servicos} />
-        <PrintableContract data={{ erp: erpId }} services={servicos} />
+      <div style={{ position: "fixed", left: "-9999px", top: 0 }}>
+        <PrintableDev erpId={erpId} services={servicos} />
+        <PrintableContract erpId={erpId} services={servicos} />
       </div>
     </div>
   );

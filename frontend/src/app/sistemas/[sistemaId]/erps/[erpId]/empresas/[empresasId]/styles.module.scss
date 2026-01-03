@@ -3,7 +3,7 @@
   margin: 40px auto;
   padding: 0 20px;
   text-align: center;
-  position: relative; // ⬅️ necessário para a seta
+  position: relative; // necessário para a seta
 }
 
 /* ======================================================
@@ -31,16 +31,16 @@
   cursor: pointer;
   transition: all 0.2s ease;
 
+  svg {
+    color: #ffffff;
+    width: 22px;
+    height: 22px;
+  }
+
   &:hover {
     background: rgba(255, 255, 255, 0.25);
     transform: translateX(-3px);
   }
-}
-
-.backIcon {
-  color: #ffffff;
-  width: 22px;
-  height: 22px;
 }
 
 /* ======================================================
@@ -51,39 +51,18 @@
   font-size: 42px;
   font-weight: 900;
   color: #ffffff;
-  margin-bottom: 10px;
-}
-
-.subtitle {
-  font-size: 18px;
-  font-weight: 600;
-  color: #ffffff;
   margin-bottom: 25px;
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  align-items: center;
-
-  span {
-    font-weight: 700;
-  }
-}
-
-.divider {
-  width: 2px;
-  height: 18px;
-  background: #ffffff60;
 }
 
 /* ======================================================
-   BOTÕES
+   BOTÕES SUPERIORES
 ====================================================== */
 
 .previewActions {
   display: flex;
   justify-content: center;
   gap: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 22px;
   flex-wrap: wrap;
 }
 
@@ -121,12 +100,17 @@
   }
 }
 
+/* ======================================================
+   BUSCA + BOTÃO ADICIONAR
+====================================================== */
+
 .topActions {
   display: flex;
   justify-content: center;
   gap: 15px;
   margin-bottom: 30px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .searchInput {
@@ -147,6 +131,8 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 25px;
   margin: 0 auto;
+  padding: 0;
+  list-style: none;
 }
 
 .cardItem {
@@ -155,9 +141,11 @@
   padding: 20px;
   border: 1px solid #ffffff30;
   cursor: pointer;
+
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+
   transition: 0.2s ease;
   overflow: hidden;
 
@@ -165,28 +153,30 @@
     transform: translateY(-4px);
     border-color: #ffffff80;
   }
-}
 
-.cardItem h3 {
-  margin: 0 0 10px;
-  font-size: 20px;
-  font-weight: bold;
-  color: #181818;
-}
+  h3 {
+    margin: 0 0 10px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #181818;
+  }
 
-.cardItem p {
-  text-align: left;
-  font-size: 15px;
-  color: #181818;
-  overflow: hidden;
-  max-height: 120px;
+  p {
+    text-align: left;
+    font-size: 15px;
+    color: #181818;
+    overflow: hidden;
+    max-height: 120px;
+  }
 }
 
 .deleteBtn {
-  margin-top: 12px;
+  margin-top: 14px;
+  align-self: flex-start;
+
   background: #e74c3c;
   color: #ffffff;
-  padding: 6px 12px;
+  padding: 6px 14px;
   border-radius: 8px;
   border: none;
   cursor: pointer;
@@ -250,5 +240,9 @@
 @media (max-width: 600px) {
   .cardsGrid {
     grid-template-columns: 1fr;
+  }
+
+  .searchInput {
+    width: 100%;
   }
 }
