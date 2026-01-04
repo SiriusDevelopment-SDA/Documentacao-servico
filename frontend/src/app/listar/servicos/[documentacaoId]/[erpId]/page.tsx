@@ -25,7 +25,7 @@ interface Servico {
   documentacaoId: number;
   erpId: number;
   nomeServicoId?: number;
-  nomeServico?: NomeServico; // 🔹 relação
+  nomeServico?: NomeServico; // 🔹 relação correta
 }
 
 interface PrintableProps {
@@ -53,7 +53,9 @@ function PrintableDev({ data, services }: PrintableProps) {
         <p><strong>Documentado por:</strong> {data.documentado_por ?? "Não informado"}</p>
         <p>
           <strong>Data:</strong>{" "}
-          {data.data ? new Date(data.data).toLocaleDateString("pt-BR") : "Não informado"}
+          {data.data
+            ? new Date(data.data).toLocaleDateString("pt-BR")
+            : "Não informado"}
         </p>
         <p><strong>ERP Selecionado:</strong> {data.erp ?? "Não informado"}</p>
         <p><strong>Número do Contrato:</strong> {data.numero_contrato ?? "Não informado"}</p>
@@ -64,7 +66,9 @@ function PrintableDev({ data, services }: PrintableProps) {
 
         {services.map((service) => (
           <div key={service.id} className={styles.printServiceBox}>
-            <h4>✓ {service.nomeServico?.nome || "Serviço sem nome"}</h4>
+            <h4>
+              ✓ {service.nomeServico?.nome || "Serviço sem nome"}
+            </h4>
 
             {service.descricao && (
               <p>
@@ -92,7 +96,9 @@ function PrintableContract({ data, services }: PrintableProps) {
 
   return (
     <div id="print-contract" className={styles.printWrapper}>
-      <h2 className={styles.printTitle}>PRÉVIA - CONTRATO DE SERVIÇOS</h2>
+      <h2 className={styles.printTitle}>
+        PRÉVIA - CONTRATO DE SERVIÇOS
+      </h2>
 
       <section className={styles.printSection}>
         <h3>DADOS DO CONTRATO</h3>
@@ -102,7 +108,9 @@ function PrintableContract({ data, services }: PrintableProps) {
         <p><strong>Documentado por:</strong> {data.documentado_por ?? "Não informado"}</p>
         <p>
           <strong>Data:</strong>{" "}
-          {data.data ? new Date(data.data).toLocaleDateString("pt-BR") : "Não informado"}
+          {data.data
+            ? new Date(data.data).toLocaleDateString("pt-BR")
+            : "Não informado"}
         </p>
         <p><strong>ERP Selecionado:</strong> {data.erp ?? "Não informado"}</p>
         <p><strong>Número do Contrato:</strong> {data.numero_contrato ?? "Não informado"}</p>
@@ -144,10 +152,14 @@ export default function ListarServicosPage() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const cardsPerPage = 6;
+
   const totalPages = Math.ceil(filtered.length / cardsPerPage);
   const startIndex = (currentPage - 1) * cardsPerPage;
   const currentCards = filtered.slice(startIndex, startIndex + cardsPerPage);
 
+  /* ===============================
+     LOAD INICIAL
+  ================================ */
   useEffect(() => {
     async function load() {
       try {
@@ -173,7 +185,9 @@ export default function ListarServicosPage() {
       }
     }
 
-    if (!Number.isNaN(docId) && !Number.isNaN(erp)) load();
+    if (!Number.isNaN(docId) && !Number.isNaN(erp)) {
+      load();
+    }
   }, [docId, erp]);
 
   /* 🔍 BUSCA PELO NOME DO SERVIÇO */
@@ -188,11 +202,13 @@ export default function ListarServicosPage() {
     setCurrentPage(1);
   }, [search, servicos]);
 
+  /* 🗑️ DELETAR SERVIÇO */
   async function deletar(id: number) {
     if (!confirm("Deseja excluir este serviço?")) return;
 
     try {
       await api.delete(`/servico/${id}`);
+
       const updated = servicos.filter((s) => s.id !== id);
       setServicos(updated);
       setFiltered(updated);
@@ -206,9 +222,11 @@ export default function ListarServicosPage() {
       <h1 className={styles.title}>Serviços cadastrados</h1>
 
       <p className={styles.subtitle}>
-        <span>Documentação:</span> <strong>{nomeDocumentacao || "—"}</strong>
+        <span>Documentação:</span>{" "}
+        <strong>{nomeDocumentacao || "—"}</strong>
         <span className={styles.divider} />
-        <span>ERP:</span> <strong>{nomeErp || "—"}</strong>
+        <span>ERP:</span>{" "}
+        <strong>{nomeErp || "—"}</strong>
       </p>
 
       <div className={styles.topActions}>
@@ -219,7 +237,11 @@ export default function ListarServicosPage() {
           onChange={(e) => setSearch(e.target.value)}
         />
 
-        <Button onClick={() => router.push(`/criar/servicos/${docId}/${erp}`)}>
+        <Button
+          onClick={() =>
+            router.push(`/criar/servicos/${docId}/${erp}`)
+          }
+        >
           Adicionar serviço
         </Button>
 
@@ -245,7 +267,7 @@ export default function ListarServicosPage() {
               <div className={styles.cardBody}>
                 <p>
                   {s.descricao
-                    ? s.descricao.substring(0, 120) + "..."
+                    ? `${s.descricao.substring(0, 120)}...`
                     : "Sem descrição"}
                 </p>
               </div>
