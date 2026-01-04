@@ -9,7 +9,7 @@ import { api } from "@/services/api";
 interface Sistema {
   id: number;
   nome: string;
-  logoUrl?: string;
+  logoUrl?: string; // deve vir como: /uploads/unifica.png
 }
 
 export default function SistemasPage() {
@@ -31,6 +31,11 @@ export default function SistemasPage() {
   const sistemasFiltrados = sistemas.filter((s) =>
     s.nome.toLowerCase().includes(search.toLowerCase())
   );
+
+  const getLogoUrl = (logoUrl?: string) => {
+    if (!logoUrl) return "/system-default.png";
+    return `${process.env.NEXT_PUBLIC_API_URL}${logoUrl}`;
+  };
 
   return (
     <div className={styles.container}>
@@ -61,16 +66,14 @@ export default function SistemasPage() {
               className={styles.systemCard}
               onClick={() => router.push(`/sistemas/${sistema.id}`)}
             >
-              {sistema.logoUrl && (
-                <img
-                  src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${sistema.logoUrl}`}
-                  alt={sistema.nome}
-                  className={styles.logo}
-                  onError={(e) => {
-                    e.currentTarget.src = "/icons/system-default.svg";
-                  }}
-                />
-              )}
+              <img
+                src={getLogoUrl(sistema.logoUrl)}
+                alt={sistema.nome}
+                className={styles.logo}
+                onError={(e) => {
+                  e.currentTarget.src = "/system-default.png";
+                }}
+              />
 
               <span>{sistema.nome}</span>
             </button>

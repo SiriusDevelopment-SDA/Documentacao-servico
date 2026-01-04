@@ -15,7 +15,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-app.use("/uploads", express.static(path.resolve("uploads")));
+app.use("/uploads",express.static(path.resolve(__dirname, "..", "uploads")));
 app.use("/api", documentacaoRoutes);
 app.use("/api", erpRoutes);
 app.use("/api", servicoRoutes);
