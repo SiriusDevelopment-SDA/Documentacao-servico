@@ -16,6 +16,30 @@ export default function PreviewDevModal({
   if (!data) return null;
 
   /* =========================
+     NORMALIZAÇÃO DO ERP
+  ========================= */
+
+  const erpNome = (() => {
+    if (typeof data?.erp === "string" || typeof data?.erp === "number") {
+      return data.erp;
+    }
+
+    if (typeof data?.erp === "object" && data?.erp?.nome) {
+      return data.erp.nome;
+    }
+
+    if (typeof data?.erp_nome === "string") {
+      return data.erp_nome;
+    }
+
+    if (typeof data?.nome_erp === "string") {
+      return data.nome_erp;
+    }
+
+    return "Não informado";
+  })();
+
+  /* =========================
      NORMALIZAÇÃO DO CONTRATO
   ========================= */
 
@@ -48,12 +72,7 @@ export default function PreviewDevModal({
       data?.id ||
       "Não informado",
 
-    erp:
-      data?.erp?.nome ||
-      data?.erp_nome ||
-      data?.nome_erp ||
-      data?.erp ||
-      "Não informado",
+    erp: erpNome,
   };
 
   /* =========================
@@ -62,7 +81,6 @@ export default function PreviewDevModal({
 
   const servicos = Array.isArray(selectedServices)
     ? selectedServices.map((service) => {
-        // 🔒 Nome do serviço
         const nome =
           service?.nomeServico ||
           service?.nome ||
@@ -70,13 +88,11 @@ export default function PreviewDevModal({
           service?.servico?.nome ||
           "Serviço não identificado";
 
-        // 🔒 Descrição
         const descricao =
           service?.descricao ||
           service?.detalhes ||
           "";
 
-        // 🔒 Parâmetros (blindado)
         let parametros: any = null;
         try {
           if (typeof service?.parametros_padrao === "string") {

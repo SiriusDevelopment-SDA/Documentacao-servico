@@ -19,6 +19,26 @@ export default function PreviewContractModal({
      NORMALIZAÇÃO DE DADOS
   ========================= */
 
+  const erpNome = (() => {
+    if (typeof data?.erp === "string" || typeof data?.erp === "number") {
+      return data.erp;
+    }
+
+    if (typeof data?.erp === "object" && data?.erp?.nome) {
+      return data.erp.nome;
+    }
+
+    if (typeof data?.erp_nome === "string") {
+      return data.erp_nome;
+    }
+
+    if (typeof data?.nome_erp === "string") {
+      return data.nome_erp;
+    }
+
+    return "Não informado";
+  })();
+
   const contrato = {
     nomeEmpresa:
       data?.nome_empresa ||
@@ -48,12 +68,7 @@ export default function PreviewContractModal({
       data?.id ||
       "Não informado",
 
-    erp:
-      data?.erp?.nome ||
-      data?.erp_nome ||
-      data?.nome_erp ||
-      data?.erp ||
-      "Não informado",
+    erp: erpNome,
   };
 
   /* =========================
