@@ -36,7 +36,7 @@ function PrintableDev({
   services: Servico[];
 }) {
   return (
-    <div id="print-dev" style={{ width: "210mm", padding: "20mm" }}>
+    <div id="print-dev" style={{ width: "210mm", padding: "20mm", background: "#fff", color: "#000" }}>
       <h2>REGISTRO DE DESENVOLVEDORES</h2>
       <p><strong>ERP:</strong> {erpId}</p>
       <p><strong>Data:</strong> {new Date().toLocaleDateString()}</p>
@@ -67,7 +67,7 @@ function PrintableContract({
   services: Servico[];
 }) {
   return (
-    <div id="print-contract" style={{ width: "210mm", padding: "20mm" }}>
+    <div id="print-contract" style={{ width: "210mm", padding: "20mm", background: "#fff", color: "#000" }}>
       <h2>CONTRATO DE SERVIÇOS</h2>
       <p><strong>ERP:</strong> {erpId}</p>
       <p><strong>Data:</strong> {new Date().toLocaleDateString()}</p>
@@ -99,7 +99,6 @@ export default function ListarServicosPage() {
   const [showDevPreview, setShowDevPreview] = useState(false);
   const [showContractPreview, setShowContractPreview] = useState(false);
 
-  // ✅ DADOS DO CONTRATO (BACKEND)
   const [contractData, setContractData] = useState<any>(null);
 
   /* =============================
@@ -188,7 +187,7 @@ export default function ListarServicosPage() {
   };
 
   /* =============================
-     PDF
+     PDF (MANTIDO COMO ESTAVA)
   ============================== */
   const generatePDF = async (elementId: string, filename: string) => {
     if (typeof window === "undefined") return;
@@ -376,8 +375,17 @@ export default function ListarServicosPage() {
         />
       )}
 
-      {/* PDF OCULTO */}
-      <div style={{ position: "fixed", left: "-9999px", top: 0 }}>
+      {/* PDF OCULTO — ALTERAÇÃO CRÍTICA (NÃO usar left negativo) */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          opacity: 0,
+          pointerEvents: "none",
+          zIndex: -1,
+        }}
+      >
         <PrintableDev erpId={erpId} services={servicos} />
         <PrintableContract erpId={erpId} services={servicos} />
       </div>
