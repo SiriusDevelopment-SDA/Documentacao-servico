@@ -60,7 +60,7 @@ export default function ContratantesPage() {
       {/* Botão voltar */}
       <button
         className={styles.backButton}
-        onClick={() => router.push(`/sistemas/${sistemaId}/erps/${erpId}`)}
+        onClick={() => router.push(`/sistemas/${sistemaId}`)}
         title="Voltar"
       >
         <ArrowLeftIcon />
