@@ -8,7 +8,7 @@ import Button from "@/components/ui/button/Button";
 import EditServiceModal from "./EditServiceModal";
 
 /* ===============================
-   TIPAGENS CORRETAS
+   TIPAGENS
 ================================ */
 
 interface NomeServico {
@@ -16,7 +16,10 @@ interface NomeServico {
   nome: string;
 }
 
-interface Servico {
+/**
+ * Tipo EXATO do que vem da API
+ */
+interface ServicoApi {
   id: number;
   descricao: string;
   instrucoes: string;
@@ -27,7 +30,12 @@ interface Servico {
   exige_cpf_cnpj: boolean;
   exige_login_ativo: boolean;
 
-  // 🔑 NOME VEM DA RELAÇÃO
+  // 🔑 IDs obrigatórios (backend)
+  documentacaoId: number;
+  erpId: number;
+  nomeServicoId: number;
+
+  // relação
   nomeServico?: NomeServico;
 }
 
@@ -39,7 +47,7 @@ export default function ServiceDetailsPage() {
   const { id } = useParams();
   const router = useRouter();
 
-  const [servico, setServico] = useState<Servico | null>(null);
+  const [servico, setServico] = useState<ServicoApi | null>(null);
   const [loading, setLoading] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
 
@@ -69,6 +77,28 @@ export default function ServiceDetailsPage() {
     return <p>Serviço não encontrado.</p>;
   }
 
+  /**
+   * 🔁 NORMALIZA PARA O MODAL
+   * (exatamente o que o EditServiceModal espera)
+   */
+  const servicoParaEdicao = {
+    id: servico.id,
+
+    documentacaoId: servico.documentacaoId,
+    erpId: servico.erpId,
+    nomeServicoId: servico.nomeServicoId,
+    nomeServico: servico.nomeServico,
+
+    descricao: servico.descricao || "",
+    instrucoes: servico.instrucoes || "",
+    endpoint: servico.endpoint || "",
+    parametros_padrao: servico.parametros_padrao || {},
+
+    exige_contrato: !!servico.exige_contrato,
+    exige_cpf_cnpj: !!servico.exige_cpf_cnpj,
+    exige_login_ativo: !!servico.exige_login_ativo,
+  };
+
   return (
     <div className={styles.container}>
       {/* 🔙 VOLTAR */}
@@ -76,7 +106,7 @@ export default function ServiceDetailsPage() {
         Voltar
       </Button>
 
-      {/* 🏷️ TÍTULO (NOME CORRETO) */}
+      {/* 🏷️ TÍTULO */}
       <h1 className={styles.title}>
         {servico.nomeServico?.nome || "Serviço sem nome"}
       </h1>
@@ -88,7 +118,9 @@ export default function ServiceDetailsPage() {
           {servico.descricao || "Sem descrição"}
         </p>
 
-        <p><strong>Instruções:</strong></p>
+        <p>
+          <strong>Instruções:</strong>
+        </p>
         <pre className={styles.block}>
           {servico.instrucoes || "Nenhuma instrução cadastrada."}
         </pre>
@@ -98,7 +130,9 @@ export default function ServiceDetailsPage() {
           {servico.endpoint || "Não informado"}
         </p>
 
-        <p><strong>Parâmetros padrão:</strong></p>
+        <p>
+          <strong>Parâmetros padrão:</strong>
+        </p>
         <pre className={styles.block}>
           {servico.parametros_padrao
             ? JSON.stringify(servico.parametros_padrao, null, 2)
@@ -131,7 +165,7 @@ export default function ServiceDetailsPage() {
       {/* 🧩 MODAL */}
       {showEditModal && (
         <EditServiceModal
-          servico={servico}
+          servico={servicoParaEdicao}
           onClose={() => setShowEditModal(false)}
           onUpdated={loadServico}
         />
