@@ -1,9 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  reactStrictMode: false, // DESABILITA O DOBRAR RENDER DO REACT
+  reactStrictMode: false,
   reactCompiler: true,
-  output: "standalone",
 };
 
 export default nextConfig;
