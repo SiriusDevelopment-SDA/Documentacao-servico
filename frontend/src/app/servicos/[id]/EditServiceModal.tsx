@@ -92,6 +92,7 @@ export default function EditServiceModal({
 
     try {
       await api.put(`/servico/${servico.id}`, {
+        nomeServicoId: servico.nomeServico?.id, // 🔑 ESSENCIAL
         descricao: form.descricao,
         instrucoes: form.instrucoes,
         endpoint: form.endpoint,
@@ -100,6 +101,7 @@ export default function EditServiceModal({
         exige_cpf_cnpj: form.exige_cpf_cnpj,
         exige_login_ativo: form.exige_login_ativo,
       });
+
 
       onUpdated();
       onClose();
