@@ -9,18 +9,22 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-# ===== RUNTIME (standalone) =====
+# ===== RUNTIME =====
 FROM node:20-alpine
 
 WORKDIR /app
-
 ENV NODE_ENV=production
 
-# Copia apenas o necessário do standalone
+# Copia o server standalone
 COPY --from=builder /app/.next/standalone ./
+
+# Copia os arquivos estáticos (ESSENCIAL)
 COPY --from=builder /app/.next/static ./.next/static
+
+# Se usar public/
 COPY --from=builder /app/public ./public
 
 EXPOSE 3000
 
+# ⚠️ COMANDO CORRETO PARA STANDALONE
 CMD ["node", "server.js"]
