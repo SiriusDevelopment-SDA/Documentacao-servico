@@ -9,7 +9,7 @@ COPY . .
 RUN npm run build
 
 # =========================
-# Runtime (standalone real)
+# Runtime
 # =========================
 FROM node:20-alpine
 
@@ -21,8 +21,6 @@ COPY --from=builder /app/.next/standalone ./
 
 # Assets estáticos (OBRIGATÓRIO)
 COPY --from=builder /app/.next/static ./.next/static
-
-# Public
 COPY --from=builder /app/public ./public
 
 EXPOSE 3000
