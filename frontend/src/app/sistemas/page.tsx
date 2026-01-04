@@ -9,8 +9,16 @@ import { api } from "@/services/api";
 interface Sistema {
   id: number;
   nome: string;
-  logoUrl?: string; // deve vir como: /uploads/unifica.png
+  logoUrl?: string; // exemplo: /uploads/unifica.png
 }
+
+/**
+ * 🔒 Normalização da API
+ * - Evita undefined em produção
+ * - Funciona em dev, build e Docker
+ */
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ?? "https://api.coraxy.com.br";
 
 export default function SistemasPage() {
   const router = useRouter();
@@ -32,9 +40,12 @@ export default function SistemasPage() {
     s.nome.toLowerCase().includes(search.toLowerCase())
   );
 
+  /**
+   * 🎯 Resolve corretamente a URL da logo
+   */
   const getLogoUrl = (logoUrl?: string) => {
     if (!logoUrl) return "/system-default.png";
-    return `${process.env.NEXT_PUBLIC_API_URL}${logoUrl}`;
+    return `${API_URL}${logoUrl}`;
   };
 
   return (
@@ -70,6 +81,7 @@ export default function SistemasPage() {
                 src={getLogoUrl(sistema.logoUrl)}
                 alt={sistema.nome}
                 className={styles.logo}
+                loading="lazy"
                 onError={(e) => {
                   e.currentTarget.src = "/system-default.png";
                 }}
