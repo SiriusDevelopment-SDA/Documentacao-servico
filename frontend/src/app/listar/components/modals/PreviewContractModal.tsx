@@ -16,7 +16,7 @@ export default function PreviewContractModal({
   if (!data) return null;
 
   /* =========================
-     NORMALIZAÇÃO DE DADOS
+     NORMALIZAÇÃO DO ERP
   ========================= */
 
   const erpNome = (() => {
@@ -38,6 +38,10 @@ export default function PreviewContractModal({
 
     return "Não informado";
   })();
+
+  /* =========================
+     NORMALIZAÇÃO DO CONTRATO
+  ========================= */
 
   const contrato = {
     nomeEmpresa:
@@ -79,7 +83,7 @@ export default function PreviewContractModal({
     ? selectedServices.map((service) => ({
         id: service?.id ?? Math.random(),
         nome:
-          service?.nomeServico ||
+          service?.nomeServico?.nome ||   // ✅ CORREÇÃO DEFINITIVA
           service?.nome ||
           service?.descricao ||
           service?.servico?.nome ||
@@ -104,24 +108,12 @@ export default function PreviewContractModal({
         <div className={styles.section}>
           <h3>DADOS DO CONTRATO</h3>
 
-          <p>
-            <strong>Nome da empresa:</strong> {contrato.nomeEmpresa}
-          </p>
-          <p>
-            <strong>Nome do Contratante:</strong> {contrato.nomeContratante}
-          </p>
-          <p>
-            <strong>Documentado por:</strong> {contrato.documentadoPor}
-          </p>
-          <p>
-            <strong>Data:</strong> {contrato.dataContrato}
-          </p>
-          <p>
-            <strong>ERP Selecionado:</strong> {contrato.erp}
-          </p>
-          <p>
-            <strong>Número do Contrato:</strong> {contrato.numeroContrato}
-          </p>
+          <p><strong>Nome da empresa:</strong> {contrato.nomeEmpresa}</p>
+          <p><strong>Nome do Contratante:</strong> {contrato.nomeContratante}</p>
+          <p><strong>Documentado por:</strong> {contrato.documentadoPor}</p>
+          <p><strong>Data:</strong> {contrato.dataContrato}</p>
+          <p><strong>ERP Selecionado:</strong> {contrato.erp}</p>
+          <p><strong>Número do Contrato:</strong> {contrato.numeroContrato}</p>
         </div>
 
         <div className={styles.section}>

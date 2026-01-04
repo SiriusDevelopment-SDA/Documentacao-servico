@@ -82,7 +82,7 @@ export default function PreviewDevModal({
   const servicos = Array.isArray(selectedServices)
     ? selectedServices.map((service) => {
         const nome =
-          service?.nomeServico ||
+          service?.nomeServico?.nome ||   // ✅ CORREÇÃO DEFINITIVA
           service?.nome ||
           service?.descricao ||
           service?.servico?.nome ||
