@@ -9,15 +9,22 @@ COPY . .
 RUN npm run build
 
 # =========================
-# Runtime
+# Runtime (standalone real)
 # =========================
 FROM node:20-alpine
 
 WORKDIR /app
 ENV NODE_ENV=production
 
-COPY --from=builder /app ./
+# Server standalone
+COPY --from=builder /app/.next/standalone ./
+
+# Assets estáticos (OBRIGATÓRIO)
+COPY --from=builder /app/.next/static ./.next/static
+
+# Public
+COPY --from=builder /app/public ./public
 
 EXPOSE 3000
 
-CMD ["npm", "start"]
+CMD ["node", "server.js"]
