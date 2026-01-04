@@ -1,6 +1,4 @@
-# =========================
-# BUILD
-# =========================
+# ===== BUILD =====
 FROM node:20-alpine AS builder
 
 WORKDIR /app
@@ -11,21 +9,18 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-
-# =========================
-# RUNTIME
-# =========================
+# ===== RUNTIME (standalone) =====
 FROM node:20-alpine
 
 WORKDIR /app
+
 ENV NODE_ENV=production
 
-# Copia SOMENTE o necessário
-COPY --from=builder /app/.next ./.next
+# Copia apenas o necessário do standalone
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/node_modules ./node_modules
 
 EXPOSE 3000
 
-CMD ["npx", "next", "start"]
+CMD ["node", "server.js"]
