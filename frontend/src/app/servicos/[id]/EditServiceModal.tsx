@@ -16,6 +16,14 @@ interface NomeServico {
 
 interface Servico {
   id: number;
+
+  // relações obrigatórias (backend)
+  documentacaoId: number;
+  erpId: number;
+  nomeServicoId: number;
+  nomeServico?: NomeServico;
+
+  // dados editáveis
   descricao: string;
   instrucoes: string;
   endpoint: string;
@@ -24,8 +32,6 @@ interface Servico {
   exige_contrato: boolean;
   exige_cpf_cnpj: boolean;
   exige_login_ativo: boolean;
-
-  nomeServico?: NomeServico;
 }
 
 interface EditServiceModalProps {
@@ -58,7 +64,7 @@ export default function EditServiceModal({
   });
 
   /* ===============================
-     CHANGE HANDLER
+     HANDLER GENÉRICO
   ================================ */
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -76,7 +82,7 @@ export default function EditServiceModal({
   }
 
   /* ===============================
-     SUBMIT
+     SUBMIT (PUT COMPLETO)
   ================================ */
   async function handleSubmit() {
     let jsonParams = null;
@@ -92,16 +98,21 @@ export default function EditServiceModal({
 
     try {
       await api.put(`/servico/${servico.id}`, {
-        nomeServicoId: servico.nomeServico?.id, // 🔑 ESSENCIAL
+        // 🔑 CAMPOS OBRIGATÓRIOS (BACKEND)
+        nomeServicoId: servico.nomeServicoId,
+        documentacaoId: servico.documentacaoId,
+        erpId: servico.erpId,
+
+        // ✏️ CAMPOS EDITÁVEIS
         descricao: form.descricao,
         instrucoes: form.instrucoes,
         endpoint: form.endpoint,
         parametros_padrao: jsonParams,
+
         exige_contrato: form.exige_contrato,
         exige_cpf_cnpj: form.exige_cpf_cnpj,
         exige_login_ativo: form.exige_login_ativo,
       });
-
 
       onUpdated();
       onClose();
