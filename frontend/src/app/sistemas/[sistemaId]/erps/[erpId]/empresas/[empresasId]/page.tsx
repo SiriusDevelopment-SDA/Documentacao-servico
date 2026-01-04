@@ -99,7 +99,7 @@ export default function ListarServicosPage() {
   const [showDevPreview, setShowDevPreview] = useState(false);
   const [showContractPreview, setShowContractPreview] = useState(false);
 
-  // ✅ DADOS DO CONTRATO (NOVO)
+  // ✅ DADOS DO CONTRATO (BACKEND)
   const [contractData, setContractData] = useState<any>(null);
 
   /* =============================
@@ -109,10 +109,10 @@ export default function ListarServicosPage() {
   const [currentPage, setCurrentPage] = useState(1);
 
   /* =============================
-     LOAD
+     LOAD SERVIÇOS
   ============================== */
   useEffect(() => {
-    async function load() {
+    async function loadServicos() {
       try {
         const res = await api.get("/servico");
         const filtrados = res.data.filter(
@@ -125,7 +125,29 @@ export default function ListarServicosPage() {
       }
     }
 
-    if (!Number.isNaN(erpId)) load();
+    if (!Number.isNaN(erpId)) loadServicos();
+  }, [erpId]);
+
+  /* =============================
+     LOAD DOCUMENTAÇÃO (CONTRATO)
+  ============================== */
+  useEffect(() => {
+    async function loadContrato() {
+      try {
+        const res = await api.get("/documentacoes");
+
+        const contrato = res.data.find(
+          (d: any) => Number(d.erpId) === erpId
+        );
+
+        setContractData(contrato ?? null);
+      } catch (err) {
+        console.error("Erro ao carregar documentação", err);
+        setContractData(null);
+      }
+    }
+
+    if (!Number.isNaN(erpId)) loadContrato();
   }, [erpId]);
 
   /* =============================
@@ -213,19 +235,6 @@ export default function ListarServicosPage() {
     pdf.save(filename);
   };
 
-  /* =============================
-     DADOS MOCKADOS (SEGUROS)
-     depois você liga na API
-  ============================== */
-  const buildContractData = () => ({
-    nome_empresa: "Empresa Exemplo",
-    nome_contratante: "Responsável Exemplo",
-    documentado_por: "Usuário Logado",
-    data: new Date().toLocaleDateString(),
-    numero_contrato: `ERP-${erpId}`,
-    erp: erpId,
-  });
-
   return (
     <div className={styles.container}>
       {/* VOLTAR */}
@@ -243,7 +252,10 @@ export default function ListarServicosPage() {
         <button
           className={styles.blackBtn}
           onClick={() => {
-            setContractData(buildContractData());
+            if (!contractData) {
+              alert("Nenhuma documentação encontrada para este ERP.");
+              return;
+            }
             setShowDevPreview(true);
           }}
         >
@@ -253,7 +265,10 @@ export default function ListarServicosPage() {
         <button
           className={styles.blackBtn}
           onClick={() => {
-            setContractData(buildContractData());
+            if (!contractData) {
+              alert("Nenhuma documentação encontrada para este ERP.");
+              return;
+            }
             setShowContractPreview(true);
           }}
         >
