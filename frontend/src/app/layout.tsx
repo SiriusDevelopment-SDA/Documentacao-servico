@@ -13,9 +13,7 @@ export const metadata: Metadata = {
   title: "Documentação de Serviços",
   description: "Sistema de documentação",
   icons: {
-    icon: "/logoCoraxy1.png",
-    shortcut: "/logoCoraxy1.png",
-    apple: "/logoCoraxy1.png",
+    icon: "/logoCoraxy1.png"
   },
 };
 
