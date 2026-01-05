@@ -17,13 +17,13 @@ interface NomeServico {
 interface Servico {
   id: number;
 
-  // relações obrigatórias (backend)
+  // 🔑 obrigatórios no backend
   documentacaoId: number;
   erpId: number;
   nomeServicoId: number;
   nomeServico?: NomeServico;
 
-  // dados editáveis
+  // dados do serviço
   descricao: string;
   instrucoes: string;
   endpoint: string;
@@ -50,11 +50,11 @@ export default function EditServiceModal({
   onUpdated,
 }: EditServiceModalProps) {
   const [form, setForm] = useState({
-    descricao: servico.descricao || "",
-    instrucoes: servico.instrucoes || "",
-    endpoint: servico.endpoint || "",
+    descricao: servico.descricao ?? "",
+    instrucoes: servico.instrucoes ?? "",
+    endpoint: servico.endpoint ?? "",
     parametros_padrao: JSON.stringify(
-      servico.parametros_padrao || {},
+      servico.parametros_padrao ?? {},
       null,
       2
     ),
@@ -82,42 +82,43 @@ export default function EditServiceModal({
   }
 
   /* ===============================
-     SUBMIT (PUT COMPLETO)
+     SUBMIT (PUT COMPATÍVEL COM DTO RÍGIDO)
   ================================ */
   async function handleSubmit() {
-    let jsonParams = null;
+    let parametrosParsed: Record<string, any> = {};
 
-    if (form.parametros_padrao.trim() !== "") {
-      try {
-        jsonParams = JSON.parse(form.parametros_padrao);
-      } catch {
-        alert("JSON dos parâmetros é inválido!");
-        return;
-      }
+    try {
+      parametrosParsed =
+        form.parametros_padrao.trim() === ""
+          ? {}
+          : JSON.parse(form.parametros_padrao);
+    } catch {
+      alert("JSON dos parâmetros é inválido!");
+      return;
     }
 
     try {
       await api.put(`/servico/${servico.id}`, {
-        // 🔑 CAMPOS OBRIGATÓRIOS (BACKEND)
+        // 🔑 RELAÇÕES (OBRIGATÓRIAS)
         nomeServicoId: servico.nomeServicoId,
         documentacaoId: servico.documentacaoId,
         erpId: servico.erpId,
 
-        // ✏️ CAMPOS EDITÁVEIS
+        // ✏️ CAMPOS DO SERVIÇO
         descricao: form.descricao,
         instrucoes: form.instrucoes,
         endpoint: form.endpoint,
-        parametros_padrao: jsonParams,
+        parametros_padrao: parametrosParsed, // ⚠️ nunca null
 
-        exige_contrato: form.exige_contrato,
-        exige_cpf_cnpj: form.exige_cpf_cnpj,
-        exige_login_ativo: form.exige_login_ativo,
+        exige_contrato: !!form.exige_contrato,
+        exige_cpf_cnpj: !!form.exige_cpf_cnpj,
+        exige_login_ativo: !!form.exige_login_ativo,
       });
 
       onUpdated();
       onClose();
     } catch (error) {
-      console.error(error);
+      console.error("Erro ao atualizar serviço:", error);
       alert("Erro ao atualizar serviço");
     }
   }
@@ -127,7 +128,7 @@ export default function EditServiceModal({
       <div className={styles.modal}>
         <h2 className={styles.title}>Editar serviço</h2>
 
-        {/* 🏷️ NOME (READ ONLY) */}
+        {/* 🏷️ NOME (APENAS VISUAL) */}
         <label className={styles.label}>Nome</label>
         <input
           className={styles.input}
