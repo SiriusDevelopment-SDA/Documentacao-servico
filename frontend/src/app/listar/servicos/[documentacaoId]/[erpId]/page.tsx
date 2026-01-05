@@ -207,7 +207,7 @@ export default function ListarServicosPage() {
     if (!confirm("Deseja excluir este serviço?")) return;
 
     try {
-      await api.delete(`/servico/${id}`);
+      await api.delete(`/servico/delete/${id}`);
 
       const updated = servicos.filter((s) => s.id !== id);
       setServicos(updated);
