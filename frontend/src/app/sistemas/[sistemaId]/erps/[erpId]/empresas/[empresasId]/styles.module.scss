@@ -171,33 +171,18 @@
 }
 
 .deleteBtn {
-  width: 100%;
-  height: 44px;
-
-  margin-top: auto; // empurra o botão para o fundo do card
-
+  margin-top: 12px;
   background: #e74c3c;
   color: #ffffff;
-
+  padding: 6px 12px;
+  border-radius: 8px;
   border: none;
-  border-radius: 10px;
-
-  font-size: 15px;
-  font-weight: 600;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
   cursor: pointer;
-  transition: all 0.2s ease;
+  font-weight: 600;
+  transition: 0.2s;
 
   &:hover {
     background: #c0392b;
-  }
-
-  &:active {
-    transform: scale(0.97);
   }
 }
 
