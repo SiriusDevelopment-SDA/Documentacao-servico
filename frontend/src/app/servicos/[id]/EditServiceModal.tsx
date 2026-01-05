@@ -5,44 +5,21 @@ import styles from "./modal.module.scss";
 import Button from "@/components/ui/button/Button";
 import { api } from "@/services/api";
 
-/* ===============================
-   TIPAGENS
-================================ */
-
-interface NomeServico {
-  id: number;
-  nome: string;
-}
-
-interface Servico {
-  id: number;
-
-  // 🔑 obrigatórios no backend
-  documentacaoId: number;
-  erpId: number;
-  nomeServicoId: number;
-  nomeServico?: NomeServico;
-
-  // dados do serviço
-  descricao: string;
-  instrucoes: string;
-  endpoint: string;
-  parametros_padrao?: any;
-
-  exige_contrato: boolean;
-  exige_cpf_cnpj: boolean;
-  exige_login_ativo: boolean;
-}
-
 interface EditServiceModalProps {
-  servico: Servico;
+  servico: any;
   onClose: () => void;
   onUpdated: () => void;
 }
 
 /* ===============================
-   COMPONENT
-================================ */
+   REMOVE UNDEFINED
+=============================== */
+function cleanUndefined(obj: Record<string, any>) {
+  Object.keys(obj).forEach(
+    (key) => obj[key] === undefined && delete obj[key]
+  );
+  return obj;
+}
 
 export default function EditServiceModal({
   servico,
@@ -50,71 +27,63 @@ export default function EditServiceModal({
   onUpdated,
 }: EditServiceModalProps) {
   const [form, setForm] = useState({
-    descricao: servico.descricao ?? "",
-    instrucoes: servico.instrucoes ?? "",
-    endpoint: servico.endpoint ?? "",
-    parametros_padrao: JSON.stringify(
-      servico.parametros_padrao ?? {},
-      null,
-      2
-    ),
-    exige_contrato: !!servico.exige_contrato,
-    exige_cpf_cnpj: !!servico.exige_cpf_cnpj,
-    exige_login_ativo: !!servico.exige_login_ativo,
+    nomeServico:
+      typeof servico?.nomeServico === "string"
+        ? servico.nomeServico
+        : servico?.nomeServico?.nome ?? "",
+
+    descricao: servico?.descricao ?? "",
+    instrucoes: servico?.instrucoes ?? "",
+    endpoint: servico?.endpoint ?? "",
+    parametros: JSON.stringify(servico?.parametros_padrao ?? {}, null, 2),
+
+    exige_contrato: !!servico?.exige_contrato,
+    exige_cpf_cnpj: !!servico?.exige_cpf_cnpj,
+    exige_login_ativo: !!servico?.exige_login_ativo,
   });
 
-  /* ===============================
-     HANDLER GENÉRICO
-  ================================ */
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) {
-    const target = e.target as HTMLInputElement | HTMLTextAreaElement;
-    const { name, value, type } = target;
+    const { name, value, type, checked } = e.target as HTMLInputElement;
 
     setForm((prev) => ({
       ...prev,
-      [name]:
-        type === "checkbox"
-          ? (target as HTMLInputElement).checked
-          : value,
+      [name]: type === "checkbox" ? checked : value,
     }));
   }
 
-  /* ===============================
-     SUBMIT (PUT COMPATÍVEL COM DTO RÍGIDO)
-  ================================ */
   async function handleSubmit() {
-    let parametrosParsed: Record<string, any> = {};
+    if (!form.nomeServico.trim()) {
+      alert("O nome do serviço é obrigatório.");
+      return;
+    }
+
+    let parametros_padrao: any = null;
 
     try {
-      parametrosParsed =
-        form.parametros_padrao.trim() === ""
-          ? {}
-          : JSON.parse(form.parametros_padrao);
+      parametros_padrao =
+        form.parametros.trim() === ""
+          ? null
+          : JSON.parse(form.parametros);
     } catch {
       alert("JSON dos parâmetros é inválido!");
       return;
     }
 
+    const payload = cleanUndefined({
+      nomeServico: String(form.nomeServico).trim(),
+      descricao: form.descricao.trim() || null,
+      instrucoes: form.instrucoes.trim() || null,
+      endpoint: form.endpoint.trim() || null,
+      parametros_padrao,
+      exige_contrato: form.exige_contrato,
+      exige_cpf_cnpj: form.exige_cpf_cnpj,
+      exige_login_ativo: form.exige_login_ativo,
+    });
+
     try {
-      await api.put(`/servico/${servico.id}`, {
-        // 🔑 RELAÇÕES (OBRIGATÓRIAS)
-        nomeServicoId: servico.nomeServicoId,
-        documentacaoId: servico.documentacaoId,
-        erpId: servico.erpId,
-
-        // ✏️ CAMPOS DO SERVIÇO
-        descricao: form.descricao,
-        instrucoes: form.instrucoes,
-        endpoint: form.endpoint,
-        parametros_padrao: parametrosParsed, // ⚠️ nunca null
-
-        exige_contrato: !!form.exige_contrato,
-        exige_cpf_cnpj: !!form.exige_cpf_cnpj,
-        exige_login_ativo: !!form.exige_login_ativo,
-      });
-
+      await api.put(`/servico/${servico.id}`, payload);
       onUpdated();
       onClose();
     } catch (error) {
@@ -128,15 +97,14 @@ export default function EditServiceModal({
       <div className={styles.modal}>
         <h2 className={styles.title}>Editar serviço</h2>
 
-        {/* 🏷️ NOME (APENAS VISUAL) */}
-        <label className={styles.label}>Nome</label>
+        <label className={styles.label}>Nome do serviço</label>
         <input
           className={styles.input}
-          value={servico.nomeServico?.nome || "Serviço sem nome"}
-          disabled
+          name="nomeServico"
+          value={form.nomeServico}
+          onChange={handleChange}
         />
 
-        {/* 📝 DESCRIÇÃO */}
         <label className={styles.label}>Descrição</label>
         <textarea
           className={styles.textarea}
@@ -145,7 +113,6 @@ export default function EditServiceModal({
           onChange={handleChange}
         />
 
-        {/* 📌 INSTRUÇÕES */}
         <label className={styles.label}>Instruções</label>
         <textarea
           className={styles.textarea}
@@ -154,7 +121,6 @@ export default function EditServiceModal({
           onChange={handleChange}
         />
 
-        {/* 🌐 ENDPOINT */}
         <label className={styles.label}>Endpoint</label>
         <input
           className={styles.input}
@@ -163,16 +129,14 @@ export default function EditServiceModal({
           onChange={handleChange}
         />
 
-        {/* 🧩 JSON */}
         <label className={styles.label}>Parâmetros (JSON)</label>
         <textarea
           className={styles.textarea}
-          name="parametros_padrao"
-          value={form.parametros_padrao}
+          name="parametros"
+          value={form.parametros}
           onChange={handleChange}
         />
 
-        {/* ☑️ CHECKBOXES */}
         <div className={styles.checkboxRow}>
           <label className={styles.checkboxGroup}>
             <input
@@ -205,12 +169,10 @@ export default function EditServiceModal({
           </label>
         </div>
 
-        {/* 🔘 AÇÕES */}
         <div className={styles.actions}>
           <Button variant="danger" onClick={onClose}>
             Cancelar
           </Button>
-
           <Button variant="primary" onClick={handleSubmit}>
             Salvar alterações
           </Button>
