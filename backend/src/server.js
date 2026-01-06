@@ -8,6 +8,7 @@ import servicoRoutes from "./routes/servicoRoutes.js"
 import servicoDesejadoRoutes from "./routes/servicoDesejadoRoutes.js";
 import sistemaRoutes from "./routes/sistemaRoutes.js"
 import nomeServicoRoutes from "./routes/nomeServicoRoutes.js";
+import empresaRoutes from './routes/empresaRoutes.js'
 import path from "path";
 
 const app = express();
@@ -15,13 +16,14 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-app.use("/uploads",express.static(path.resolve(__dirname, "..", "uploads")));
+app.use("/uploads", express.static(path.resolve(__dirname, "..", "uploads")));
 app.use("/api", documentacaoRoutes);
 app.use("/api", erpRoutes);
 app.use("/api", servicoRoutes);
 app.use("/api", servicoDesejadoRoutes);
 app.use("/api", sistemaRoutes);
 app.use("/api", nomeServicoRoutes);
+app.use("/api", empresaRoutes);
 
 
 const PORT = process.env.PORT || 3001;
