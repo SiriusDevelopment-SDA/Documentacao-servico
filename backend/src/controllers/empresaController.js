@@ -1,26 +1,28 @@
 import empresaService from "../services/empresaService.js";
 
 async function create(req, res) {
-    try {
-        const data = req.body;
+  try {
+    const { nome, cpf_cnpj, erpId } = req.body;
 
-        if (!data.nome) {
-            return res.status(400).json({ message: "O campo nome é obrigatório." });
-        }
-
-        const novaEmpresa = await empresaService.create({
-            nome: nome,
-            cpf_cnpj: cpf_cnpj
-        })
-        return res.status(201).json(novaEmpresa);
-
-    } catch (error) {
-        return res.status(500).json({
-            message: "Erro ao criar empresa!",
-            error: error.message
-        });
+    if (!nome) {
+      return res.status(400).json({ message: "O campo nome é obrigatório." });
     }
+
+    const novaEmpresa = await empresaService.create({
+      nome,
+      cpf_cnpj,
+      erpId
+    });
+
+    return res.status(201).json(novaEmpresa);
+  } catch (error) {
+    return res.status(500).json({
+      message: "Erro ao criar empresa!",
+      error: error.message,
+    });
+  }
 }
+
 
 async function showAll(req, res) {
     try {
