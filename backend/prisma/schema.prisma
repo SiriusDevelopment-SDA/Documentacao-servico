@@ -21,7 +21,7 @@ model Sistema {
 }
 
 /* =====================================================
-   ERP (DONO DAS REGRAS E PARÂMETROS)
+   ERP
 ===================================================== */
 
 model Erp {
@@ -31,14 +31,12 @@ model Erp {
 
   sistemas Sistema[] @relation("SistemaErps")
 
-  // existentes
   documentacoes Documentacao[]
   servicos      Servico[]
   empresas      Empresa[]
 
-  // regras e parâmetros
-  regras               RegraNegocio[]
-  parametrosPadrao     ParametroPadrao[]
+  regras                RegraNegocio[]
+  parametrosPadrao      ParametroPadrao[]
   parametrosNecessarios ParametroNecessario[]
 }
 
@@ -138,7 +136,7 @@ model Empresa {
 }
 
 /* =====================================================
-   PARÂMETRO PADRÃO (GATILHO DA REGRA)
+   PARÂMETRO PADRÃO
 ===================================================== */
 
 model ParametroPadrao {
@@ -151,11 +149,13 @@ model ParametroPadrao {
 
   regras RegraNegocio[]
 
+  parametrosNecessarios ParametroPadraoParametroNecessario[]
+
   @@unique([nome, erpId])
 }
 
 /* =====================================================
-   PARÂMETRO NECESSÁRIO (CAMPOS OBRIGATÓRIOS)
+   PARÂMETRO NECESSÁRIO
 ===================================================== */
 
 model ParametroNecessario {
@@ -166,9 +166,31 @@ model ParametroNecessario {
   erpId Int
   erp   Erp @relation(fields: [erpId], references: [id])
 
+  parametrosPadrao ParametroPadraoParametroNecessario[]
+
+  // ⚠️ LEGADO
   regras RegraNegocioParametroNecessario[]
 
   @@unique([nome, erpId])
+}
+
+/* =====================================================
+   PADRÃO ⇄ NECESSÁRIO (CONTRATO) ✅
+===================================================== */
+
+model ParametroPadraoParametroNecessario {
+  id Int @id @default(autoincrement())
+
+  parametroPadraoId     Int
+  parametroNecessarioId Int
+
+  obrigatorio Boolean @default(true)
+  ordem       Int?
+
+  parametroPadrao     ParametroPadrao     @relation(fields: [parametroPadraoId], references: [id])
+  parametroNecessario ParametroNecessario @relation(fields: [parametroNecessarioId], references: [id])
+
+  @@unique([parametroPadraoId, parametroNecessarioId])
 }
 
 /* =====================================================
@@ -177,6 +199,8 @@ model ParametroNecessario {
 
 model RegraNegocio {
   id Int @id @default(autoincrement())
+
+  setor String
 
   // ⚠️ LEGADO (NÃO REMOVER)
   parametros_padrao       String
@@ -196,13 +220,13 @@ model RegraNegocio {
 }
 
 /* =====================================================
-   REGRA ⇄ PARÂMETRO NECESSÁRIO
+   REGRA ⇄ NECESSÁRIO (LEGADO)
 ===================================================== */
 
 model RegraNegocioParametroNecessario {
   id Int @id @default(autoincrement())
 
-  regraId              Int
+  regraId               Int
   parametroNecessarioId Int
 
   regra               RegraNegocio       @relation(fields: [regraId], references: [id])
