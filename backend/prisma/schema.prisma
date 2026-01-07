@@ -17,7 +17,6 @@ model Sistema {
   logoUrl String?
   ativo   Boolean @default(true)
 
-  // Relacionamento muitos-para-muitos com ERPs
   erps Erp[] @relation("SistemaErps")
 }
 
@@ -30,17 +29,17 @@ model Erp {
   nome  String  @unique
   ativo Boolean @default(true)
 
-  // Relacionamento muitos-para-muitos com Sistemas
   sistemas Sistema[] @relation("SistemaErps")
 
-  // Relacionamentos existentes
+  // existentes
   documentacoes Documentacao[]
   servicos      Servico[]
+  empresas      Empresa[]
 
-  // 🆕 Complementos (NÃO QUEBRAM NADA)
-  empresas   Empresa[]
-  parametros Parametro[]
-  regras     RegraNegocio[]
+  // regras e parâmetros
+  regras               RegraNegocio[]
+  parametrosPadrao     ParametroPadrao[]
+  parametrosNecessarios ParametroNecessario[]
 }
 
 /* =====================================================
@@ -57,7 +56,6 @@ model Documentacao {
   info_adicionais  String?
   createdAt        DateTime @default(now())
 
-  // RELACIONAMENTO COM ERP 
   erpId Int?
   erp   Erp? @relation(fields: [erpId], references: [id])
 
@@ -72,33 +70,30 @@ model Documentacao {
 model Servico {
   id Int @id @default(autoincrement())
 
-  // 🔗 Nome do serviço (catálogo)
   nomeServicoId Int
   nomeServico   NomeServico @relation(fields: [nomeServicoId], references: [id])
 
-  // 📄 Dados do serviço
   descricao  String?
   instrucoes String?
   ativo      Boolean @default(true)
 
-  // 🆕 Desativação
   motivoDesativacao String?
   dataDesativacao   DateTime?
 
   sem_necessidade_api Boolean  @default(false)
   endpoint            String?
   parametros_padrao   Json?
-  exige_contrato      Boolean  @default(false)
-  exige_cpf_cnpj      Boolean  @default(false)
-  exige_login_ativo   Boolean  @default(false)
-  responsavel_padrao  String?
-  createdAt           DateTime @default(now())
 
-  // 🔗 Documentação
+  exige_contrato    Boolean @default(false)
+  exige_cpf_cnpj    Boolean @default(false)
+  exige_login_ativo Boolean @default(false)
+
+  responsavel_padrao String?
+  createdAt          DateTime @default(now())
+
   documentacaoId Int
   documentacao   Documentacao @relation(fields: [documentacaoId], references: [id])
 
-  // 🔗 ERP
   erpId Int
   erp   Erp @relation(fields: [erpId], references: [id])
 }
@@ -136,33 +131,44 @@ model Empresa {
   nome     String  @unique
   cpf_cnpj String? @unique
 
-  // 🔗 ERP ao qual a empresa pertence
   erpId Int
   erp   Erp @relation(fields: [erpId], references: [id])
 
-  // 🔗 Regras aplicadas
   regras EmpresaRegra[]
 }
 
 /* =====================================================
-   PARÂMETRO (CRIADO NA TELA DE PARÂMETROS)
+   PARÂMETRO PADRÃO (GATILHO DA REGRA)
 ===================================================== */
 
-model Parametro {
-  id     Int    @id @default(autoincrement())
-  codigo String
-  nome   String
-  ativo  Boolean @default(true)
+model ParametroPadrao {
+  id    Int     @id @default(autoincrement())
+  nome  String
+  ativo Boolean @default(true)
 
-  // 🔗 ERP ao qual pertence
   erpId Int
   erp   Erp @relation(fields: [erpId], references: [id])
 
-  // 🔗 Uso nas regras
-  regrasComoPadrao     RegraNegocio[]
-  regrasComoNecessario RegraParametroNecessario[]
+  regras RegraNegocio[]
 
-  @@unique([codigo, erpId])
+  @@unique([nome, erpId])
+}
+
+/* =====================================================
+   PARÂMETRO NECESSÁRIO (CAMPOS OBRIGATÓRIOS)
+===================================================== */
+
+model ParametroNecessario {
+  id    Int     @id @default(autoincrement())
+  nome  String
+  ativo Boolean @default(true)
+
+  erpId Int
+  erp   Erp @relation(fields: [erpId], references: [id])
+
+  regras RegraNegocioParametroNecessario[]
+
+  @@unique([nome, erpId])
 }
 
 /* =====================================================
@@ -172,50 +178,41 @@ model Parametro {
 model RegraNegocio {
   id Int @id @default(autoincrement())
 
-  // ⚠️ CAMPOS LEGADOS (MANTIDOS PARA NÃO QUEBRAR)
+  // ⚠️ LEGADO (NÃO REMOVER)
   parametros_padrao       String
   parametros_obrigatorios String
 
-  // 🧠 NOVOS CAMPOS
-  codigo    String
   descricao String
   ativa     Boolean @default(true)
 
-  // 🔗 ERP dono da regra
   erpId Int
   erp   Erp @relation(fields: [erpId], references: [id])
 
-  // 🔑 Parâmetro padrão (gatilho da regra)
   parametroPadraoId Int
-  parametroPadrao   Parametro @relation(fields: [parametroPadraoId], references: [id])
+  parametroPadrao   ParametroPadrao @relation(fields: [parametroPadraoId], references: [id])
 
-  // 🔑 Parâmetros necessários
-  parametrosNecessarios RegraParametroNecessario[]
-
-  // 🔗 Empresas que usam a regra
-  empresas EmpresaRegra[]
-
-  @@unique([codigo, erpId])
+  parametrosNecessarios RegraNegocioParametroNecessario[]
+  empresas              EmpresaRegra[]
 }
 
 /* =====================================================
-   PARÂMETROS NECESSÁRIOS DA REGRA
+   REGRA ⇄ PARÂMETRO NECESSÁRIO
 ===================================================== */
 
-model RegraParametroNecessario {
+model RegraNegocioParametroNecessario {
   id Int @id @default(autoincrement())
 
-  regraId     Int
-  parametroId Int
+  regraId              Int
+  parametroNecessarioId Int
 
-  regra     RegraNegocio @relation(fields: [regraId], references: [id])
-  parametro Parametro   @relation(fields: [parametroId], references: [id])
+  regra               RegraNegocio       @relation(fields: [regraId], references: [id])
+  parametroNecessario ParametroNecessario @relation(fields: [parametroNecessarioId], references: [id])
 
-  @@unique([regraId, parametroId])
+  @@unique([regraId, parametroNecessarioId])
 }
 
 /* =====================================================
-   EMPRESA ⇄ REGRA (USO DA REGRA)
+   EMPRESA ⇄ REGRA
 ===================================================== */
 
 model EmpresaRegra {
