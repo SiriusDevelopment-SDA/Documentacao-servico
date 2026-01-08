@@ -2,7 +2,7 @@
 
 import { Card, CardContent, Typography, Box } from "@mui/material";
 import type { ReactNode } from "react";
-import styles from "./KpiCard.module.scss";
+import styles from "./KpiCard.regras.module.scss";
 
 interface KpiCardProps {
   title: string;
