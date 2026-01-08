@@ -1,0 +1,29 @@
+.card {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(242, 192, 16, 0.4);
+  border-radius: 12px;
+  backdrop-filter: blur(6px);
+  color: #fff;
+  transition: 0.2s ease;
+  padding: 8px 0;
+
+  &:hover {
+    border-color: var(--yellow-500, #f2c010);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    transform: translateY(-2px);
+  }
+}
+
+.title {
+  opacity: 0.8;
+}
+
+.value {
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.subtitle {
+  margin-top: 4px;
+  opacity: 0.7;
+}

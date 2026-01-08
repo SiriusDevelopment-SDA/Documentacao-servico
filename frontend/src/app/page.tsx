@@ -30,7 +30,7 @@ export default function Home() {
             Ver documentações
           </Link>
 
-          <Link href="/documentacao" className={styles.secondaryBtn}>
+          <Link href="/regras" className={styles.secondaryBtn}>
             Regras de negócios
           </Link>
           <Link href="/documentacao" className={styles.secondaryBtn}>

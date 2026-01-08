@@ -9,7 +9,10 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
     "@hookform/resolvers": "^5.2.2",
+    "@mui/material": "^7.3.7",
     "axios": "^1.13.2",
     "html2canvas": "^1.4.1",
     "html2pdf.js": "^0.12.1",
