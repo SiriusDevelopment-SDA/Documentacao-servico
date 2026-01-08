@@ -43,13 +43,13 @@
 
 .actions {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);  // 2 colunas para botões
+  grid-template-columns: repeat(2, 1fr); // 2 colunas para os botões
   gap: 1rem;
   width: 100%;
   max-width: 420px;
   margin: 2rem auto 0 auto;
 
-  /* Quando for necessário, pode ajustar para apenas uma coluna no mobile */
+  // Mobile ajusta para 1 coluna
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
   }
@@ -67,6 +67,7 @@
   text-align: center;
   transition: 0.2s;
   white-space: nowrap;
+  width: 100%;
 
   &:hover {
     transform: scale(1.05);
@@ -74,21 +75,16 @@
 }
 
 .secondaryBtn {
-  background: #333;
-  padding: 0.9rem;
-  border-radius: 16px;
-  text-decoration: none;
-  color: var(--dark-900);
-  font-weight: 600;
-  transition: 0.2s;
   background-color: var(--yellow-500);
+  font-weight: 600;
+  padding: 0.9rem;
 
   &:hover {
     transform: scale(1.05);
   }
 }
 
-/* 🔥 Scroll bonito e discreto */
+/* Scroll custom */
 .card {
   scrollbar-width: thin;
   scrollbar-color: var(--yellow-500) transparent;
@@ -101,10 +97,4 @@
     background: var(--yellow-500);
     border-radius: 10px;
   }
-}
-
-.actions a:last-child {
-  grid-column: span 2;
-  justify-self: center;
-  width: 70%;
 }

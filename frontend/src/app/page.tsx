@@ -31,13 +31,8 @@ export default function Home() {
           </Link>
 
           <Link href="/documentacao" className={styles.secondaryBtn}>
-           Ver regras de negócios
+            Regras de negócios
           </Link>
-
-          <Link href="/documentacao" className={styles.secondaryBtn}>
-            Criar regra de negócios
-          </Link>
-
           <Link href="/documentacao" className={styles.secondaryBtn}>
             Sistemas
           </Link>
