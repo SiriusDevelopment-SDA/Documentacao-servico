@@ -1,0 +1,68 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 99;
+}
+
+.modal {
+  background: #1a1a1d;
+  padding: 1.5rem;
+  border-radius: 10px;
+  width: 420px;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin-top: 1rem;
+}
+
+.input {
+  padding: 0.6rem;
+  background: #0f0f0f;
+  border: 1px solid #444;
+  border-radius: 6px;
+  color: #fff;
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+}
+
+.cancel {
+  background: #444;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  color: white;
+  transition: 0.2s;
+
+  &:hover {
+    background: #666;
+  }
+}
+
+.save {
+  background: #f2c010;
+  color: black;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+
+  &:hover {
+    background: #ffd94a;
+  }
+}

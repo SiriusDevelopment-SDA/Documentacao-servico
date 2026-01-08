@@ -19,7 +19,7 @@ export default function Navbar() {
 
             <ul className={styles.menu}>
                 <li>
-                    <Link href="/">Início</Link>
+                    <Link href="/regras">Home</Link>
                 </li>
                 <li>
                     <Link href="/novaregra">Nova Regra</Link>
@@ -32,9 +32,6 @@ export default function Navbar() {
                 </li>
                 <li>
                     <Link href="/parametros/necessarios">Parâmetros Necessários</Link>
-                </li>
-                <li>
-                    <Link href="/empresas">Empresas</Link>
                 </li>
             </ul>
         </nav>
