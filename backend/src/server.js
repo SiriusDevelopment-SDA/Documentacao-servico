@@ -11,7 +11,8 @@ import sistemaRoutes from "./routes/sistemaRoutes.js";
 import nomeServicoRoutes from "./routes/nomeServicoRoutes.js";
 import empresaRoutes from "./routes/empresaRoutes.js";
 import parametrosPadronizadosRoutes from "./routes/parametrosPadronizadosRoutes.js";
-import parametrosNecessariosRoutes from "./routes/parametrosNecessariosRoutes.js"
+import parametrosNecessariosRoutes from "./routes/parametrosNecessariosRoutes.js";
+import regraNegocioRoutes from "./routes/regraNegocioRoutes.js";
 
 import path from "path";
 import { fileURLToPath } from "url";
@@ -39,6 +40,7 @@ app.use("/api", nomeServicoRoutes);
 app.use("/api", empresaRoutes);
 app.use("/api", parametrosPadronizadosRoutes);
 app.use("/api", parametrosNecessariosRoutes);
+app.use("/api", regraNegocioRoutes);
 
 const PORT = process.env.PORT || 3001;
 
