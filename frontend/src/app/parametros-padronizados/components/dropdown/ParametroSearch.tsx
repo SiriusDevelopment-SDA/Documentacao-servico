@@ -2,13 +2,7 @@
 
 import { useState } from "react";
 import styles from "./parametro.module.scss";
-
-// Definição do tipo Parametro dentro do próprio componente
-interface Parametro {
-  id: number;
-  nome: string;
-  valor: string;
-}
+import { Parametro } from '@/app/parametros-padronizados/types';  // Importe o tipo Parametro de 'types.ts'
 
 interface ParametroSearchProps {
   parametros: Parametro[];

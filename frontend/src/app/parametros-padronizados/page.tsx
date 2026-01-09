@@ -4,14 +4,7 @@ import { useEffect, useState } from "react";
 import styles from "./styles.module.scss";
 import ModalUpdate from "./components/modal/EditModalParametro";
 import ParametroSearch from "./components/dropdown/ParametroSearch";
-
-// Definição do tipo Parametro global
-export interface Parametro {
-  id: number;
-  nome: string;
-  valor: string;
-  erpId: number;
-}
+import { Parametro } from './types';  // Importe o tipo Parametro de 'types.ts'
 
 interface Erp {
   id: number;
