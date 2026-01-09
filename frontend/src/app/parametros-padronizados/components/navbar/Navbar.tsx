@@ -19,16 +19,13 @@ export default function Navbar() {
 
             <ul className={styles.menu}>
                 <li>
-                    <Link href="/">Início</Link>
+                    <Link href="/regras">Home</Link>
                 </li>
                 <li>
                     <Link href="/novaregra">Nova Regra</Link>
                 </li>
                 <li>
                     <Link href="/regrasnegocio">Regras de negócio</Link>
-                </li>
-                <li>
-                    <Link href="/parametros-padronizados">Parâmetros Padronizados</Link>
                 </li>
                 <li>
                     <Link href="/parametros/necessarios">Parâmetros Necessários</Link>
