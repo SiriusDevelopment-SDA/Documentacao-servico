@@ -1,0 +1,114 @@
+.nav {
+  width: 100%;
+  height: 70px; // altura ajustada da navbar
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: transparent; // transparente no fundo
+  color: #fff;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.logoImg {
+  height: 45px; // tamanho da logo ajustado
+  width: auto;  // mantém proporção
+  object-fit: contain;
+  display: block;
+}
+
+.menu {
+  list-style: none;
+  display: flex;
+  gap: 24px;
+}
+
+.menu a {.nav {
+  width: 100%;
+  height: 90px; // aumentei a altura
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px; // aumentei um pouco
+  background: transparent;
+  color: #fff;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.logoImg {
+  height: 55px; // aumentei a altura da logo
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.menu {
+  list-style: none;
+  display: flex;
+  gap: 32px; // aumentei espaçamento entre opções
+}
+
+.menu a {
+  position: relative;
+}
+
+.menu a::after {
+  content: "";
+  position: absolute;
+  width: 0%;
+  height: 2px;
+  bottom: -2px;
+  left: 0;
+  background: #f4c400;
+  transition: width 0.3s ease;
+}
+
+.menu a:hover::after {
+  width: 100%;
+}
+
+
+/* ---------- Responsivo opcional ---------- */
+@media (max-width: 768px) {
+  .logoImg {
+    height: 38px;
+  }
+  .menu {
+    gap: 16px;
+  }
+  .menu a {
+    font-size: 14px;
+    padding: 8px 4px;
+  }
+}
+
+  text-decoration: none;
+  color: #fff;
+  font-size: 14px;
+  transition: 0.2s ease;
+}
+
+.menu a:hover {
+  color: #f4c400;
+}
+
+/* ---------- Responsivo opcional ---------- */
+@media (max-width: 768px) {
+  .logoImg {
+    height: 32px; // diminui logo no mobile
+  }
+  .menu {
+    gap: 12px;
+  }
+  .menu a {
+    font-size: 13px;
+  }
+}

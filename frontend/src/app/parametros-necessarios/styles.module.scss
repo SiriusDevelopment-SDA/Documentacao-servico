@@ -1,0 +1,149 @@
+/* ---------------------------------------
+   RESET GLOBAL (feito de forma mais segura)
+---------------------------------------- */
+
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  outline: 0;
+  background: var(--gradient-coraxy);
+  font-family: 'Inter', sans-serif;
+  color: #fff;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------------------------------------
+   CONTAINER PRINCIPAL
+---------------------------------------- */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  width: 100%;
+  height: 90vh; /* Alterado para 90% da altura da tela */
+  max-width: 1000px;
+  background: linear-gradient(135deg, #0e0d0d 0%, #5c5020 50%, #f2c010 100%);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  margin: 0 auto;
+}
+
+/* ---------------------------------------
+   CARD DE PARÂMETRO
+---------------------------------------- */
+
+.card {
+  background-color: #333;
+  background: linear-gradient(135deg, #2b2b2b, #444);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 500px;  /* Ajustei para um tamanho mais compacto */
+  width: 100%;
+  padding-top: 20px;  /* Ajustei o padding para um tamanho mais adequado */
+}
+
+/* ---------------------------------------
+   TÍTULO DO CARD
+---------------------------------------- */
+
+.title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: white;
+  text-align: center;
+}
+
+/* ---------------------------------------
+   FORMULÁRIO
+---------------------------------------- */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 500px;
+  margin-bottom: 20px;
+}
+
+.inputField, .searchInput, .selectField {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  width: 100%;
+  background-color: #fff;
+  transition: border-color 0.3s ease;
+
+  &:focus {
+    border-color: #f2c010;  /* Cor de borda ao focar */
+  }
+}
+
+/* ---------------------------------------
+   BOTÃO
+---------------------------------------- */
+
+.button, .searchButton {
+  background-color: #f2c010;
+  color: #fff;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #e1b507;  /* Efeito hover */
+  }
+}
+
+/* ---------------------------------------
+   BARRA DE PESQUISA
+---------------------------------------- */
+
+.searchSection {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  width: 100%;
+  max-width: 600px;
+}
+
+.searchInput {
+  padding: 12px;
+  border: 2px solid #ccc;
+  border-radius: 16px;
+  font-size: 1rem;
+  flex: 1;
+  background-color: #fff;
+}
+
+.searchButton {
+  background-color: #f2c010;
+  color: #fff;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  margin-left: 10px;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #e1b507;
+  }
+}
