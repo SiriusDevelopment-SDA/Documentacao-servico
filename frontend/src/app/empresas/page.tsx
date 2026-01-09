@@ -79,7 +79,7 @@ export default function EmpresasPage() {
     // Salvar edição (PUT)
     const handleSave = async (empresaAtualizada: Empresa) => {
         try {
-            await fetch(`https://api.coraxy.com.br/api/empresa/${empresaAtualizada.id}`, {
+            await fetch(`https://api.coraxy.com.br/api/empresa/update/${empresaAtualizada.id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
