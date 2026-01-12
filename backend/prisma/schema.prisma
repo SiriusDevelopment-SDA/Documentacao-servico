@@ -7,9 +7,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/* =====================================================
-   SISTEMA
-===================================================== */
+/**
+ * =====================================================
+ * SISTEMA
+ * =====================================================
+ */
 
 model Sistema {
   id      Int     @id @default(autoincrement())
@@ -20,9 +22,11 @@ model Sistema {
   erps Erp[] @relation("SistemaErps")
 }
 
-/* =====================================================
-   ERP
-===================================================== */
+/**
+ * =====================================================
+ * ERP
+ * =====================================================
+ */
 
 model Erp {
   id    Int     @id @default(autoincrement())
@@ -40,9 +44,11 @@ model Erp {
   parametrosNecessarios ParametroNecessario[]
 }
 
-/* =====================================================
-   DOCUMENTAÇÃO
-===================================================== */
+/**
+ * =====================================================
+ * DOCUMENTAÇÃO
+ * =====================================================
+ */
 
 model Documentacao {
   id               Int      @id @default(autoincrement())
@@ -61,9 +67,11 @@ model Documentacao {
   servicosDesejados ServicoDesejado[]
 }
 
-/* =====================================================
-   SERVIÇO
-===================================================== */
+/**
+ * =====================================================
+ * SERVIÇO
+ * =====================================================
+ */
 
 model Servico {
   id Int @id @default(autoincrement())
@@ -78,7 +86,7 @@ model Servico {
   motivoDesativacao String?
   dataDesativacao   DateTime?
 
-  sem_necessidade_api Boolean  @default(false)
+  sem_necessidade_api Boolean @default(false)
   endpoint            String?
   parametros_padrao   Json?
 
@@ -96,9 +104,11 @@ model Servico {
   erp   Erp @relation(fields: [erpId], references: [id])
 }
 
-/* =====================================================
-   SERVIÇO DESEJADO
-===================================================== */
+/**
+ * =====================================================
+ * SERVIÇO DESEJADO
+ * =====================================================
+ */
 
 model ServicoDesejado {
   id        Int      @id @default(autoincrement())
@@ -109,9 +119,11 @@ model ServicoDesejado {
   documentacao   Documentacao @relation(fields: [documentacaoId], references: [id])
 }
 
-/* =====================================================
-   NOME DO SERVIÇO
-===================================================== */
+/**
+ * =====================================================
+ * NOME DO SERVIÇO
+ * =====================================================
+ */
 
 model NomeServico {
   id   Int    @id @default(autoincrement())
@@ -120,9 +132,11 @@ model NomeServico {
   servicos Servico[]
 }
 
-/* =====================================================
-   EMPRESA
-===================================================== */
+/**
+ * =====================================================
+ * EMPRESA
+ * =====================================================
+ */
 
 model Empresa {
   id       Int     @id @default(autoincrement())
@@ -135,9 +149,11 @@ model Empresa {
   regras EmpresaRegra[]
 }
 
-/* =====================================================
-   PARÂMETRO PADRÃO
-===================================================== */
+/**
+ * =====================================================
+ * PARÂMETRO PADRÃO
+ * =====================================================
+ */
 
 model ParametroPadrao {
   id    Int     @id @default(autoincrement())
@@ -147,16 +163,17 @@ model ParametroPadrao {
   erpId Int
   erp   Erp @relation(fields: [erpId], references: [id])
 
-  regras RegraNegocio[]
-
+  regras                RegraNegocio[]
   parametrosNecessarios ParametroPadraoParametroNecessario[]
 
   @@unique([nome, erpId])
 }
 
-/* =====================================================
-   PARÂMETRO NECESSÁRIO
-===================================================== */
+/**
+ * =====================================================
+ * PARÂMETRO NECESSÁRIO
+ * =====================================================
+ */
 
 model ParametroNecessario {
   id    Int     @id @default(autoincrement())
@@ -174,9 +191,11 @@ model ParametroNecessario {
   @@unique([nome, erpId])
 }
 
-/* =====================================================
-   PADRÃO ⇄ NECESSÁRIO (CONTRATO) ✅
-===================================================== */
+/**
+ * =====================================================
+ * PADRÃO ⇄ NECESSÁRIO (CONTRATO) ✅
+ * =====================================================
+ */
 
 model ParametroPadraoParametroNecessario {
   id Int @id @default(autoincrement())
@@ -193,9 +212,11 @@ model ParametroPadraoParametroNecessario {
   @@unique([parametroPadraoId, parametroNecessarioId])
 }
 
-/* =====================================================
-   REGRA DE NEGÓCIO
-===================================================== */
+/**
+ * =====================================================
+ * REGRA DE NEGÓCIO
+ * =====================================================
+ */
 
 model RegraNegocio {
   id Int @id @default(autoincrement())
@@ -217,13 +238,15 @@ model RegraNegocio {
 
   setores Json?
 
-  parametrosNecessarios RegraNegocioParametroNecessario[]
+  parametrosNecessarios RegraNegocioParametroNecessario[] // ✅ CORREÇÃO AQUI
   empresas              EmpresaRegra[]
 }
 
-/* =====================================================
-   REGRA ⇄ NECESSÁRIO (LEGADO)
-===================================================== */
+/**
+ * =====================================================
+ * REGRA ⇄ NECESSÁRIO (LEGADO)
+ * =====================================================
+ */
 
 model RegraNegocioParametroNecessario {
   id Int @id @default(autoincrement())
@@ -231,15 +254,17 @@ model RegraNegocioParametroNecessario {
   regraId               Int
   parametroNecessarioId Int
 
-  regra               RegraNegocio       @relation(fields: [regraId], references: [id])
+  regra               RegraNegocio        @relation(fields: [regraId], references: [id])
   parametroNecessario ParametroNecessario @relation(fields: [parametroNecessarioId], references: [id])
 
   @@unique([regraId, parametroNecessarioId])
 }
 
-/* =====================================================
-   EMPRESA ⇄ REGRA
-===================================================== */
+/**
+ * =====================================================
+ * EMPRESA ⇄ REGRA
+ * =====================================================
+ */
 
 model EmpresaRegra {
   id Int @id @default(autoincrement())
