@@ -1,42 +1,39 @@
 import regraNegocioService from "../services/regraNegocioService.js";
 
 /* ======================================================
-   CREATE — agora aceita várias regras no payload
+   CREATE — NOVO FORMATO (UMA REGRA COM MÚLTIPLOS SETORES)
 ====================================================== */
-
 async function create(req, res) {
   try {
-    let { regras } = req.body;
+    const body = req.body;
 
-    // 🔹 Se vier uma regra única, transforma em array
-    if (!regras && req.body && typeof req.body === "object") {
-      regras = [req.body];
-    }
-
-    if (!Array.isArray(regras) || regras.length === 0) {
+    if (!body.setores || !Array.isArray(body.setores) || body.setores.length === 0) {
       return res.status(400).json({
-        message: "Envie ao menos um item em 'regras'",
+        message: "Envie 'setores[]' com ao menos 1 setor"
       });
     }
 
-    const result = await regraNegocioService.create({ regras });
+    if (!body.erpId) {
+      return res.status(400).json({
+        message: "Campo 'erpId' é obrigatório"
+      });
+    }
 
-    return res.status(201).json(result);
+    const regra = await regraNegocioService.create(body);
+
+    return res.status(201).json(regra);
 
   } catch (error) {
     return res.status(500).json({
-      message: "Erro ao criar regra(s)",
+      message: "Erro ao criar regra",
       error: error.message,
     });
   }
 }
 
-
-
 /* ======================================================
-   READ
+   READ ALL
 ====================================================== */
-
 async function showAll(req, res) {
   try {
     const regras = await regraNegocioService.showAll();
@@ -49,6 +46,9 @@ async function showAll(req, res) {
   }
 }
 
+/* ======================================================
+   READ BY ID
+====================================================== */
 async function showById(req, res) {
   try {
     const { id } = req.params;
@@ -60,6 +60,7 @@ async function showById(req, res) {
     }
 
     return res.status(200).json(regra);
+
   } catch (error) {
     return res.status(500).json({
       message: "Erro ao buscar regra de negócio",
@@ -69,19 +70,17 @@ async function showById(req, res) {
 }
 
 /* ======================================================
-   UPDATE — mantém compatibilidade
+   UPDATE
 ====================================================== */
-
 async function update(req, res) {
   try {
     const { id } = req.params;
-    const { setor, descricao, ativa, setores } = req.body;
+    const { descricao, ativa, setores } = req.body;
 
     const regra = await regraNegocioService.update(id, {
-      setor,
       descricao,
       ativa,
-      setores, // caso JSON no futuro
+      setores, // JSON atualizado
     });
 
     return res.status(200).json(regra);
@@ -97,7 +96,6 @@ async function update(req, res) {
 /* ======================================================
    DELETE
 ====================================================== */
-
 async function destroy(req, res) {
   try {
     const { id } = req.params;
@@ -116,7 +114,6 @@ async function destroy(req, res) {
 /* ======================================================
    VÍNCULO REGRA ⇄ EMPRESA
 ====================================================== */
-
 async function vincularEmpresas(req, res) {
   try {
     const { regraId } = req.params;
@@ -145,7 +142,6 @@ async function vincularEmpresas(req, res) {
 /* ======================================================
    DESVINCULAR REGRA ⇄ EMPRESA
 ====================================================== */
-
 async function desvincularEmpresa(req, res) {
   try {
     const { regraId, empresaId } = req.params;
@@ -167,15 +163,12 @@ async function desvincularEmpresa(req, res) {
 /* ======================================================
    LISTAR REGRAS POR EMPRESA
 ====================================================== */
-
 async function listarPorEmpresa(req, res) {
   try {
     const { empresaId } = req.params;
-    const { setor } = req.query;
 
     const regras = await regraNegocioService.listarRegrasPorEmpresa({
       empresaId,
-      setor,
     });
 
     return res.status(200).json(regras);
