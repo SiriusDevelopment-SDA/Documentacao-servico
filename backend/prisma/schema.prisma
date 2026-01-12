@@ -221,9 +221,8 @@ model ParametroPadraoParametroNecessario {
 model RegraNegocio {
   id Int @id @default(autoincrement())
 
-  setor String
-
-  // ⚠️ LEGADO (NÃO REMOVER)
+  // LEGADO
+  setor                   String?
   parametros_padrao       String
   parametros_obrigatorios String
 
@@ -236,9 +235,9 @@ model RegraNegocio {
   parametroPadraoId Int
   parametroPadrao   ParametroPadrao @relation(fields: [parametroPadraoId], references: [id])
 
-  setores Json?
+  setores Json? // <- opcional enquanto consolidamos
 
-  parametrosNecessarios RegraNegocioParametroNecessario[] // ✅ CORREÇÃO AQUI
+  parametrosNecessarios RegraNegocioParametroNecessario[]
   empresas              EmpresaRegra[]
 }
 
