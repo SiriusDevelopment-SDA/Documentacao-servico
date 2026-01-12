@@ -19,6 +19,12 @@ async function create(req, res) {
       });
     }
 
+    if (body.empresaId && isNaN(Number(body.empresaId))) {
+      return res.status(400).json({
+        message: "Campo 'empresaId' deve ser numérico"
+      });
+    }
+
     const regra = await regraNegocioService.create(body);
 
     return res.status(201).json(regra);
@@ -77,10 +83,16 @@ async function update(req, res) {
     const { id } = req.params;
     const { descricao, ativa, setores } = req.body;
 
+    if (setores && (!Array.isArray(setores) || setores.length === 0)) {
+      return res.status(400).json({
+        message: "Se enviado, 'setores' deve ser um array com ao menos 1 item"
+      });
+    }
+
     const regra = await regraNegocioService.update(id, {
       descricao,
       ativa,
-      setores, // JSON atualizado
+      setores
     });
 
     return res.status(200).json(regra);
@@ -166,6 +178,12 @@ async function desvincularEmpresa(req, res) {
 async function listarPorEmpresa(req, res) {
   try {
     const { empresaId } = req.params;
+
+    if (!empresaId) {
+      return res.status(400).json({
+        message: "Informe o ID da empresa"
+      });
+    }
 
     const regras = await regraNegocioService.listarRegrasPorEmpresa({
       empresaId,
