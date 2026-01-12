@@ -6,7 +6,12 @@ import regraNegocioService from "../services/regraNegocioService.js";
 
 async function create(req, res) {
   try {
-    const { regras } = req.body;
+    let { regras } = req.body;
+
+    // 🔹 Se vier uma regra única, transforma em array
+    if (!regras && req.body && typeof req.body === "object") {
+      regras = [req.body];
+    }
 
     if (!Array.isArray(regras) || regras.length === 0) {
       return res.status(400).json({
@@ -14,7 +19,8 @@ async function create(req, res) {
       });
     }
 
-    const result = await regraNegocioService.create(req.body);
+    const result = await regraNegocioService.create({ regras });
+
     return res.status(201).json(result);
 
   } catch (error) {
