@@ -25,7 +25,7 @@ export default function Navbar() {
                     <Link href="/novaregra">Nova Regra</Link>
                 </li>
                 <li>
-                    <Link href="/regrasnegocio">Regras de negócio</Link>
+                    <Link href="/regras-negocio">Regras de negócio</Link>
                 </li>
                 <li>
                     <Link href="/parametros-padronizados">Parâmetros padronizados</Link>

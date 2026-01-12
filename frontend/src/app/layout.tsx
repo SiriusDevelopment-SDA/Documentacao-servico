@@ -2,6 +2,7 @@ import "./globals.scss";
 import { Oswald } from "next/font/google";
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
+import "../styles/prime-overrides.scss";
 
 const oswald = Oswald({
   subsets: ["latin"],

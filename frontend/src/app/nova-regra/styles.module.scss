@@ -1,0 +1,217 @@
+/* =========================
+   GRADIENTE BACKGROUND
+========================= */
+.backgroundGradient {
+  min-height: 100vh;
+  width: 100%;
+  background: var(--gradient-coraxy);
+  display: flex;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+/* =========================
+   CONTAINER PRINCIPAL
+========================= */
+.container {
+  width: 100%;
+  max-width: 1100px;
+}
+
+/* =========================
+   TITULO PRINCIPAL
+========================= */
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  color: #fff;
+  margin-bottom: 25px;
+}
+
+/* =========================
+   ESTILO DOS CARDS
+========================= */
+.card {
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  margin-bottom: 25px;
+  padding: 20px !important;
+  color: white;
+}
+
+/* =========================
+   LABELS & INPUTS
+========================= */
+.label {
+  display: block;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.input {
+  width: 100% !important;
+  background: #111 !important;
+  border: 1px solid #2c2c2c !important;
+  color: #fff !important;
+  border-radius: 6px !important;
+  padding: 8px 10px !important;
+  margin-bottom: 15px;
+}
+
+/* Empresa Row (input + dropdown) */
+.empresaRow {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+
+  .input {
+    flex: 1;
+  }
+}
+
+/* Toggle Button */
+.toggle {
+  margin-top: 10px;
+  background: #222 !important;
+  border: 1px solid #555 !important;
+  color: white !important;
+}
+
+/* =========================
+   SETORES
+========================= */
+.setorRow {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.dropdownSelect {
+  width: 300px !important;
+}
+
+.emptyText {
+  color: #ccc;
+  font-size: 0.85rem;
+  margin-top: 5px;
+}
+
+/* TAGS de Setores */
+.setoresList {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.setorTag {
+  background: #2d2d2d;
+  padding: 6px 12px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+
+  i {
+    cursor: pointer;
+    color: #ff5b5b;
+  }
+}
+
+/* =========================
+   PARÂMETROS
+========================= */
+.paramBlock {
+  margin-bottom: 18px;
+}
+
+.paramSetorTitle {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.paramDropdown {
+  width: 350px !important;
+  background: #111 !important;
+  border: 1px solid #333 !important;
+  margin-bottom: 10px;
+  color: white !important;
+}
+
+.paramCard {
+  background: #1b1b1b;
+  border: 1px solid #333;
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 10px;
+}
+
+.paramHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.paramTitle {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+/* Dropdown para NECESSÁRIOS */
+.paramDropdownSmall {
+  width: 280px !important;
+  background: #111 !important;
+  border: 1px solid #333 !important;
+  margin-bottom: 10px;
+}
+
+/* =========================
+   TABELA DE NECESSÁRIOS
+========================= */
+.tableNecessarios {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 5px;
+
+  th {
+    text-align: left;
+    background: #2d2d2d;
+    padding: 6px;
+    font-size: 0.85rem;
+    color: white;
+  }
+
+  td {
+    background: #1a1a1a;
+    padding: 6px;
+    font-size: 0.85rem;
+    border-top: 1px solid #333;
+    color: #ddd;
+  }
+}
+
+/* =========================
+   BOTÃO SALVAR
+========================= */
+.saveBtnContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.btnSave {
+  background: #e5b200 !important;
+  border: none !important;
+  font-weight: 600;
+  padding: 12px 26px;
+  border-radius: 8px;
+  color: #000 !important;
+  cursor: pointer;
+}

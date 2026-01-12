@@ -22,10 +22,10 @@ export default function Navbar() {
                     <Link href="/">Início</Link>
                 </li>
                 <li>
-                    <Link href="/novaregra">Nova Regra</Link>
+                    <Link href="/nova-regra">Nova Regra</Link>
                 </li>
                 <li>
-                    <Link href="/regrasnegocio">Regras de negócio</Link>
+                    <Link href="/regras-negocios">Regras de negócio</Link>
                 </li>
                 <li>
                     <Link href="/parametros-padronizados">Parâmetros Padronizados</Link>
