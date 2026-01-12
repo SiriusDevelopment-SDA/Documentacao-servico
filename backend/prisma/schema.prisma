@@ -215,6 +215,8 @@ model RegraNegocio {
   parametroPadraoId Int
   parametroPadrao   ParametroPadrao @relation(fields: [parametroPadraoId], references: [id])
 
+  setores Json?
+
   parametrosNecessarios RegraNegocioParametroNecessario[]
   empresas              EmpresaRegra[]
 }

@@ -1,35 +1,31 @@
 import regraNegocioService from "../services/regraNegocioService.js";
 
 /* ======================================================
-   CREATE
+   CREATE — agora aceita várias regras no payload
 ====================================================== */
 
 async function create(req, res) {
   try {
-    const { erpId, setor, descricao, parametroPadraoId } = req.body;
+    const { regras } = req.body;
 
-    if (!erpId || !setor || !descricao || !parametroPadraoId) {
+    if (!Array.isArray(regras) || regras.length === 0) {
       return res.status(400).json({
-        message:
-          "Campos obrigatórios: erpId, setor, descricao, parametroPadraoId",
+        message: "Envie ao menos um item em 'regras'",
       });
     }
 
-    const regra = await regraNegocioService.create({
-      erpId,
-      setor,
-      descricao,
-      parametroPadraoId,
-    });
+    const result = await regraNegocioService.create(req.body);
+    return res.status(201).json(result);
 
-    return res.status(201).json(regra);
   } catch (error) {
     return res.status(500).json({
-      message: "Erro ao criar a regra de negócio",
+      message: "Erro ao criar regra(s)",
       error: error.message,
     });
   }
 }
+
+
 
 /* ======================================================
    READ
@@ -54,9 +50,7 @@ async function showById(req, res) {
     const regra = await regraNegocioService.showById(id);
 
     if (!regra) {
-      return res.status(404).json({
-        message: "Regra de negócio não encontrada",
-      });
+      return res.status(404).json({ message: "Regra de negócio não encontrada" });
     }
 
     return res.status(200).json(regra);
@@ -69,21 +63,23 @@ async function showById(req, res) {
 }
 
 /* ======================================================
-   UPDATE
+   UPDATE — mantém compatibilidade
 ====================================================== */
 
 async function update(req, res) {
   try {
     const { id } = req.params;
-    const { setor, descricao, ativa } = req.body;
+    const { setor, descricao, ativa, setores } = req.body;
 
     const regra = await regraNegocioService.update(id, {
       setor,
       descricao,
       ativa,
+      setores, // caso JSON no futuro
     });
 
     return res.status(200).json(regra);
+
   } catch (error) {
     return res.status(500).json({
       message: "Erro ao atualizar a regra de negócio",
@@ -131,6 +127,7 @@ async function vincularEmpresas(req, res) {
     return res.status(200).json({
       message: "Empresas vinculadas à regra com sucesso",
     });
+
   } catch (error) {
     return res.status(500).json({
       message: "Erro ao vincular empresas à regra",
@@ -152,6 +149,7 @@ async function desvincularEmpresa(req, res) {
     return res.status(200).json({
       message: "Empresa desvinculada da regra com sucesso",
     });
+
   } catch (error) {
     return res.status(500).json({
       message: "Erro ao desvincular empresa da regra",
@@ -175,6 +173,7 @@ async function listarPorEmpresa(req, res) {
     });
 
     return res.status(200).json(regras);
+
   } catch (error) {
     return res.status(500).json({
       message: "Erro ao listar regras por empresa",

@@ -1,23 +1,52 @@
 import prismaClient from "../prismaClient.js";
 
 async function create(data) {
-  return prismaClient.regraNegocio.create({
-    data: {
-      erpId: data.erpId,
-      setor: data.setor,
-      descricao: data.descricao,
-      parametroPadraoId: data.parametroPadraoId,
+  const regrasCriadas = [];
 
-      parametros_padrao: "",
-      parametros_obrigatorios: "",
-    },
-  });
+  for (const r of data.regras) {
+    // 1️⃣ Cria a regra base
+    const regra = await prismaClient.regraNegocio.create({
+      data: {
+        setor: r.setor,
+        descricao: r.descricao || "",
+        ativa: r.ativa ?? true,
+        erpId: r.erpId,
+        parametroPadraoId: r.parametroPadraoId,
+      },
+    });
+
+    // 2️⃣ Cria os parâmetros necessários (pivot)
+    if (Array.isArray(r.parametrosNecessarios) && r.parametrosNecessarios.length > 0) {
+      await prismaClient.regraNegocioParametroNecessario.createMany({
+        data: r.parametrosNecessarios.map((necId) => ({
+          regraId: regra.id,
+          parametroNecessarioId: Number(necId),
+        })),
+        skipDuplicates: true,
+      });
+    }
+
+    regrasCriadas.push(regra);
+  }
+
+  return regrasCriadas;
 }
 
 async function showAll() {
   return prismaClient.regraNegocio.findMany({
     include: {
       parametroPadrao: true,
+      parametrosNecessarios: {
+        include: {
+          parametroNecessario: true,
+        },
+      },
+      empresas: {
+        include: {
+          empresa: true,
+        },
+      },
+      erp: true,
     },
   });
 }
@@ -27,11 +56,17 @@ async function showById(id) {
     where: { id: Number(id) },
     include: {
       parametroPadrao: true,
+      parametrosNecessarios: {
+        include: {
+          parametroNecessario: true,
+        },
+      },
       empresas: {
         include: {
           empresa: true,
         },
       },
+      erp: true,
     },
   });
 }
@@ -43,6 +78,7 @@ async function update(id, data) {
       setor: data.setor,
       descricao: data.descricao,
       ativa: data.ativa,
+      setores: data.setores ?? undefined,
     },
   });
 }
@@ -88,6 +124,12 @@ async function listarRegrasPorEmpresa({ empresaId, setor }) {
     },
     include: {
       parametroPadrao: true,
+      parametrosNecessarios: {
+        include: {
+          parametroNecessario: true,
+        },
+      },
+      erp: true,
     },
   });
 }
