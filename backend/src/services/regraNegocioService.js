@@ -3,46 +3,92 @@ import prismaClient from "../prismaClient.js";
 async function create(body) {
   const { descricao, erpId, empresaId, setores } = body;
 
-  // 1) Criar regra base
+  // ============= 1. VALIDAR CAMPOS BÁSICOS =============
+
+  if (!erpId) {
+    throw new Error("Campo 'erpId' é obrigatório.");
+  }
+
+  if (!Array.isArray(setores) || setores.length === 0) {
+    throw new Error("Envie 'setores[]' com ao menos 1 setor.");
+  }
+
+  // ============= 2. CRIAR REGRA =============
+
   const regra = await prismaClient.regraNegocio.create({
     data: {
-      descricao: descricao || "Regra automática",
+      descricao: descricao || "Regra de Negócio",
       ativa: true,
-      erpId: Number(erpId),
-    }
+      erpId,
+      createdAt: new Date(),
+    },
   });
 
-  // 2) Criar setores vinculados
+  // ============= 3. CRIAR SETORES + VINCULAR PADRÕES / NECESSÁRIOS =============
+
   for (const setor of setores) {
+
+    // Criar o setor da regra
     const setorCriado = await prismaClient.regraSetor.create({
       data: {
-        nome: setor.nome,
-        regraId: regra.id
-      }
+        regraId: regra.id,
+        nome: setor.nome || "Setor",
+      },
     });
 
-    // 3) Vincular padroes (ParametroPadrao)
-    if (Array.isArray(setor.padroes)) {
+    // ---------- PADRÕES ----------
+    if (Array.isArray(setor.padroes) && setor.padroes.length > 0) {
+      const padroesIDs = setor.padroes.map(Number);
+
+      // Validar se existem no banco
+      const existentes = await prismaClient.parametroPadrao.findMany({
+        where: { id: { in: padroesIDs } },
+        select: { id: true },
+      });
+
+      const encontrados = existentes.map(e => e.id);
+      const faltando = padroesIDs.filter(id => !encontrados.includes(id));
+
+      if (faltando.length > 0) {
+        throw new Error(`Os IDs de padrões não existem: ${faltando.join(", ")}`);
+      }
+
       await prismaClient.setorParametroPadrao.createMany({
-        data: setor.padroes.map(id => ({
+        data: encontrados.map(id => ({
           setorId: setorCriado.id,
-          padraoId: Number(id)
+          padraoId: id
         }))
       });
     }
 
-    // 4) Vincular necessarios (ParametroNecessario)
-    if (Array.isArray(setor.necessarios)) {
+    // ---------- NECESSÁRIOS ----------
+    if (Array.isArray(setor.necessarios) && setor.necessarios.length > 0) {
+      const necessariosIDs = setor.necessarios.map(Number);
+
+      // Validar existência no banco
+      const existentes = await prismaClient.parametroNecessario.findMany({
+        where: { id: { in: necessariosIDs } },
+        select: { id: true },
+      });
+
+      const encontrados = existentes.map(e => e.id);
+      const faltando = necessariosIDs.filter(id => !encontrados.includes(id));
+
+      if (faltando.length > 0) {
+        throw new Error(`Os IDs de necessários não existem: ${faltando.join(", ")}`);
+      }
+
       await prismaClient.setorParametroNecessario.createMany({
-        data: setor.necessarios.map(id => ({
+        data: encontrados.map(id => ({
           setorId: setorCriado.id,
-          necessarioId: Number(id)
+          necessarioId: id
         }))
       });
     }
   }
 
-  // 5) Vincular empresa → regra (se enviado)
+  // ============= 4. VINCULAR EMPRESA (Opcional) =============
+
   if (empresaId) {
     await prismaClient.empresaRegra.create({
       data: {
@@ -56,47 +102,71 @@ async function create(body) {
 }
 
 
-/**
- * READ ALL — retorna a regra com seus setores
- */
+/* ======================================================
+   READ ALL
+====================================================== */
 async function showAll() {
   return prismaClient.regraNegocio.findMany({
     include: {
       empresas: { include: { empresa: true } },
-      parametrosNecessarios: { include: { parametroNecessario: true } },
-      erp: true
+      setores: {
+        include: {
+          padroes: { include: { padrao: true } },
+          necessarios: { include: { necessario: true } }
+        }
+      },
+      erp: true,
     }
   });
 }
 
+/* ======================================================
+   READ BY ID
+====================================================== */
 async function showById(id) {
   return prismaClient.regraNegocio.findUnique({
     where: { id: Number(id) },
     include: {
       empresas: { include: { empresa: true } },
-      parametrosNecessarios: { include: { parametroNecessario: true } },
-      erp: true
+      setores: {
+        include: {
+          padroes: { include: { padrao: true } },
+          necessarios: { include: { necessario: true } }
+        }
+      },
+      erp: true,
     }
   });
 }
 
+/* ======================================================
+   UPDATE (A SIMPLIFICAR DEPOIS)
+====================================================== */
 async function update(id, data) {
+  const { descricao, ativa, setores } = data;
+
   return prismaClient.regraNegocio.update({
     where: { id: Number(id) },
     data: {
-      descricao: data.descricao,
-      ativa: data.ativa,
-      setores: data.setores ?? undefined // nova forma
+      descricao,
+      ativa,
+      setores: setores ?? undefined,
     }
   });
 }
 
+/* ======================================================
+   DELETE
+====================================================== */
 async function destroy(id) {
   return prismaClient.regraNegocio.delete({
     where: { id: Number(id) }
   });
 }
 
+/* ======================================================
+   VINCULO EMPRESA
+====================================================== */
 async function vincularEmpresas(regraId, empresasIds) {
   return prismaClient.empresaRegra.createMany({
     data: empresasIds.map(empId => ({
@@ -107,6 +177,9 @@ async function vincularEmpresas(regraId, empresasIds) {
   });
 }
 
+/* ======================================================
+   DESVINCULAR EMPRESA
+====================================================== */
 async function desvincularEmpresa(regraId, empresaId) {
   return prismaClient.empresaRegra.delete({
     where: {
@@ -118,6 +191,9 @@ async function desvincularEmpresa(regraId, empresaId) {
   });
 }
 
+/* ======================================================
+   LISTA POR EMPRESA
+====================================================== */
 async function listarRegrasPorEmpresa({ empresaId }) {
   return prismaClient.regraNegocio.findMany({
     where: {
@@ -130,7 +206,12 @@ async function listarRegrasPorEmpresa({ empresaId }) {
     },
     include: {
       empresas: { include: { empresa: true } },
-      parametrosNecessarios: { include: { parametroNecessario: true } },
+      setores: {
+        include: {
+          padroes: { include: { padrao: true } },
+          necessarios: { include: { necessario: true } }
+        }
+      },
       erp: true,
     },
   });
