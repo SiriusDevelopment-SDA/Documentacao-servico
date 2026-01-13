@@ -1,59 +1,60 @@
 import prismaClient from "../prismaClient.js";
 
-/**
- * CREATE — agrupa múltiplos setores em uma única regra
- */
 async function create(body) {
   const { descricao, erpId, empresaId, setores } = body;
 
-  if (!erpId || !Array.isArray(setores) || setores.length === 0) {
-    throw new Error("Campos obrigatórios: erpId, setores[]");
-  }
-
-  // 🔹 valida cada item do array
-  for (const item of setores) {
-    if (!item.parametroPadraoId) {
-      throw new Error("Cada item de 'setores[]' precisa ter parametroPadraoId");
-    }
-  }
-
-  // 🔹 Cria regra base
-  const regra = await prismaClient.regraNegocio.create({
+  const regra = await prisma.regraNegocio.create({
     data: {
-      descricao: descricao || "Regra de Negócio",
+      descricao,
       ativa: true,
-      erpId,
-      parametros_padrao: "[]",
-      parametros_obrigatorios: "[]",
-      setores: setores
+      erpId
     }
   });
 
-  // 🔹 Pivot tabela para Necessários
-  for (const item of setores) {
-    if (Array.isArray(item.parametrosNecessarios)) {
-      await prismaClient.regraNegocioParametroNecessario.createMany({
-        data: item.parametrosNecessarios.map(necId => ({
-          regraId: regra.id,
-          parametroNecessarioId: Number(necId),
-        })),
-        skipDuplicates: true,
+  for (const setor of setores) {
+
+    // cria o setor
+    const setorCriado = await prisma.regraSetor.create({
+      data: {
+        nome: setor.nome,
+        regraId: regra.id
+      }
+    });
+
+    // vincula padronizados
+    if (Array.isArray(setor.padroes)) {
+      await prisma.setorParametroPadrao.createMany({
+        data: setor.padroes.map(id => ({
+          setorId: setorCriado.id,
+          padraoId: id
+        }))
+      });
+    }
+
+    // vincula necessários
+    if (Array.isArray(setor.necessarios)) {
+      await prisma.setorParametroNecessario.createMany({
+        data: setor.necessarios.map(id => ({
+          setorId: setorCriado.id,
+          necessarioId: id
+        }))
       });
     }
   }
 
-  // 🔹 Pivot tabela Empresa-Regra
+  // vincula empresa opcionalmente
   if (empresaId) {
-    await prismaClient.empresaRegra.create({
+    await prisma.empresaRegra.create({
       data: {
-        empresaId: Number(empresaId),
-        regraId: regra.id,
+        empresaId,
+        regraId: regra.id
       }
     });
   }
 
   return regra;
 }
+
 
 
 /**

@@ -96,7 +96,7 @@ model ParametroPadrao {
   erpId                 Int
   erp                   Erp                                  @relation(fields: [erpId], references: [id])
   parametrosNecessarios ParametroPadraoParametroNecessario[]
-  regras                RegraNegocio[]
+  setores               SetorParametroPadrao[]
 
   @@unique([nome, erpId])
 }
@@ -108,7 +108,7 @@ model ParametroNecessario {
   erpId            Int
   erp              Erp                                  @relation(fields: [erpId], references: [id])
   parametrosPadrao ParametroPadraoParametroNecessario[]
-  regras           RegraNegocioParametroNecessario[]
+  setores          SetorParametroNecessario[]
 
   @@unique([nome, erpId])
 }
@@ -126,29 +126,39 @@ model ParametroPadraoParametroNecessario {
 }
 
 model RegraNegocio {
-  id                      Int                               @id @default(autoincrement())
-  parametros_padrao       String
-  parametros_obrigatorios String
-  descricao               String
-  ativa                   Boolean                           @default(true)
-  erpId                   Int
-  parametroPadraoId       Int
-  setor                   String
-  setores                 Json?
-  empresas                EmpresaRegra[]
-  erp                     Erp                               @relation(fields: [erpId], references: [id])
-  parametroPadrao         ParametroPadrao                   @relation(fields: [parametroPadraoId], references: [id])
-  parametrosNecessarios   RegraNegocioParametroNecessario[]
+  id                Int           @id @default(autoincrement())
+  descricao         String
+  ativa             Boolean       @default(true)
+  erpId             Int
+  createdAt         DateTime      @default(now())
+  erp               Erp           @relation(fields: [erpId], references: [id])
+  setores           RegraSetor[]
+  empresas          EmpresaRegra[]
 }
 
-model RegraNegocioParametroNecessario {
-  id                    Int                 @id @default(autoincrement())
-  regraId               Int
-  parametroNecessarioId Int
-  parametroNecessario   ParametroNecessario @relation(fields: [parametroNecessarioId], references: [id])
-  regra                 RegraNegocio        @relation(fields: [regraId], references: [id])
+model RegraSetor {
+  id        Int                     @id @default(autoincrement())
+  regraId   Int
+  regra     RegraNegocio            @relation(fields: [regraId], references: [id])
+  nome      String                  // mock vindo do front
+  padroes   SetorParametroPadrao[]
+  necessarios SetorParametroNecessario[]
+}
 
-  @@unique([regraId, parametroNecessarioId])
+model SetorParametroPadrao {
+  id        Int               @id @default(autoincrement())
+  setorId   Int
+  padraoId  Int
+  setor     RegraSetor        @relation(fields: [setorId], references: [id])
+  padrao    ParametroPadrao   @relation(fields: [padraoId], references: [id])
+}
+
+model SetorParametroNecessario {
+  id          Int                 @id @default(autoincrement())
+  setorId     Int
+  necessarioId Int
+  setor       RegraSetor          @relation(fields: [setorId], references: [id])
+  necessario  ParametroNecessario @relation(fields: [necessarioId], references: [id])
 }
 
 model EmpresaRegra {
