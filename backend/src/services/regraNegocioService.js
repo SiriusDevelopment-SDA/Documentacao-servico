@@ -14,7 +14,7 @@ async function create(body) {
   for (const setor of setores) {
 
     // cria o setor
-    const setorCriado = await prisma.regraSetor.create({
+    const setorCriado = await prismaClient.regraSetor.create({
       data: {
         nome: setor.nome,
         regraId: regra.id
@@ -33,7 +33,7 @@ async function create(body) {
 
     // vincula necessários
     if (Array.isArray(setor.necessarios)) {
-      await prisma.setorParametroNecessario.createMany({
+      await prismaClient.setorParametroNecessario.createMany({
         data: setor.necessarios.map(id => ({
           setorId: setorCriado.id,
           necessarioId: id
@@ -44,7 +44,7 @@ async function create(body) {
 
   // vincula empresa opcionalmente
   if (empresaId) {
-    await prisma.empresaRegra.create({
+    await prismaClient.empresaRegra.create({
       data: {
         empresaId,
         regraId: regra.id
