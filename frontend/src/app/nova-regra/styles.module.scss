@@ -191,8 +191,10 @@
   margin-top: 10px;
 }
 
+/* Ajustado com alinhamento para o botão X */
 .paramHeader {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   margin-bottom: 10px;
 }
@@ -233,6 +235,11 @@
     border-top: 1px solid #333;
     color: #ddd;
   }
+
+  td:last-child {
+    width: 40px;
+    text-align: center;
+  }
 }
 
 /* =========================
@@ -252,4 +259,52 @@
   border-radius: 8px;
   color: #000 !important;
   cursor: pointer;
+}
+
+/* =========================
+   CLOSE BUTTONS (X)
+========================= */
+
+/* Botão X para remover PADRONIZADO */
+.closeBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 50%;
+  cursor: pointer;
+  margin-left: 10px;
+  background: transparent;
+  border: 1px solid #ff4d4d;
+  color: #ff4d4d;
+  transition: 0.15s ease-in-out;
+
+  &:hover {
+    background: #ff4d4d;
+    color: #fff;
+  }
+}
+
+/* Botão X menor para remover NECESSÁRIO */
+.closeBtnSmall {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  font-size: 11px;
+  border-radius: 50%;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid #ff4d4d;
+  color: #ff4d4d;
+  transition: 0.15s ease-in-out;
+
+  &:hover {
+    background: #ff4d4d;
+    color: #fff;
+  }
 }
