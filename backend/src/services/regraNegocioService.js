@@ -78,14 +78,29 @@ async function update(id, data) {
       setor: data.setor,
       descricao: data.descricao,
       ativa: data.ativa,
-      setores: data.setores ?? undefined,
     },
   });
 }
 
+/**
+ * 🔥 CORREÇÃO DO DELETE COM LIMPEZA DE PIVOTS
+ */
 async function destroy(id) {
+  const regraId = Number(id);
+
+  // 1️⃣ Remove vínculos com empresas
+  await prismaClient.empresaRegra.deleteMany({
+    where: { regraId },
+  });
+
+  // 2️⃣ Remove vínculo com pivot de parâmetros necessários
+  await prismaClient.regraNegocioParametroNecessario.deleteMany({
+    where: { regraId },
+  });
+
+  // 3️⃣ Remove finalmente a regra
   return prismaClient.regraNegocio.delete({
-    where: { id: Number(id) },
+    where: { id: regraId },
   });
 }
 
