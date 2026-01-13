@@ -34,10 +34,11 @@
 ========================= */
 .card {
   background: rgba(0, 0, 0, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 12px;
   margin-bottom: 25px;
-  padding: 20px !important;
+  padding: 22px !important;
   color: white;
 }
 
@@ -55,7 +56,7 @@
 .input {
   width: 100% !important;
   background: #111 !important;
-  border: 1px solid #2c2c2c !important;
+  border: 1px solid #2e2e2e !important;
   color: #fff !important;
   border-radius: 6px !important;
   padding: 8px 10px !important;
@@ -68,7 +69,7 @@
   gap: 10px;
   margin-bottom: 15px;
 
-  .input {
+  > * {
     flex: 1;
   }
 }
@@ -76,9 +77,46 @@
 /* Toggle Button */
 .toggle {
   margin-top: 10px;
+}
+
+/* =========================
+   GLOBAL PRIME REACT FIXES
+========================= */
+:global(.p-dropdown) {
+  background: #111 !important;
+  border: 1px solid #2e2e2e !important;
+  color: #fff !important;
+  border-radius: 6px !important;
+}
+
+:global(.p-dropdown .p-dropdown-label) {
+  color: #fff !important;
+}
+
+:global(.p-dropdown-panel) {
+  background: #141414 !important;
+  border: 1px solid #333 !important;
+}
+
+:global(.p-dropdown-items .p-dropdown-item) {
+  color: #fff !important;
+}
+
+:global(.p-dropdown-items .p-dropdown-item.p-highlight) {
+  background: #222 !important;
+  color: #ffd700 !important;
+}
+
+:global(.p-togglebutton) {
   background: #222 !important;
   border: 1px solid #555 !important;
   color: white !important;
+  border-radius: 6px !important;
+}
+
+:global(.p-togglebutton.p-highlight) {
+  background: #4caf50 !important;
+  border-color: #4caf50 !important;
 }
 
 /* =========================

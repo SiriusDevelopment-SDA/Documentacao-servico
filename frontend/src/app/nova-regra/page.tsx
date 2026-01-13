@@ -32,7 +32,6 @@ interface ParamNecessario {
 }
 
 export default function NovaRegraPage() {
-  // ===================== ESTADOS =====================
   const [empresaTexto, setEmpresaTexto] = useState("");
   const [empresaSelecionada, setEmpresaSelecionada] = useState<Empresa | null>(null);
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
@@ -47,10 +46,7 @@ export default function NovaRegraPage() {
 
   const [padronizados, setPadronizados] = useState<Record<string, { padronizado: ParamPadronizado; necessarios: ParamNecessario[] }[]>>({});
   const [padronizadosAPI, setPadronizadosAPI] = useState<ParamPadronizado[]>([]);
-
   const [necessariosAPI, setNecessariosAPI] = useState<Record<number, ParamNecessario[]>>({});
-
-  // ===================== BUSCAS =====================
 
   const fetchEmpresas = async () => {
     const res = await fetch("https://api.coraxy.com.br/api/empresa");
@@ -69,7 +65,7 @@ export default function NovaRegraPage() {
 
   const fetchNecessarios = async (padronizadoId: number) => {
     const res = await fetch("https://api.coraxy.com.br/api/parametrosnecessarios");
-    const data = await res.json();
+    const data: ParamNecessario[] = await res.json();
     setNecessariosAPI(prev => ({ ...prev, [padronizadoId]: data }));
   };
 
@@ -79,13 +75,13 @@ export default function NovaRegraPage() {
     fetchPadronizados();
   }, []);
 
-  // ===================== HANDLERS =====================
-
   const adicionarPadronizado = (setor: string, pad: ParamPadronizado) => {
     fetchNecessarios(pad.id);
 
     setPadronizados(prev => {
       const lista = prev[setor] || [];
+      if (lista.some(item => item.padronizado.id === pad.id)) return prev;
+
       return {
         ...prev,
         [setor]: [...lista, { padronizado: pad, necessarios: [] }]
@@ -96,7 +92,7 @@ export default function NovaRegraPage() {
   const adicionarNecessario = (setor: string, index: number, nec: ParamNecessario) => {
     setPadronizados(prev => {
       const copia = [...prev[setor]];
-      if (!copia[index].necessarios.some((x) => x.id === nec.id)) {
+      if (!copia[index].necessarios.some(x => x.id === nec.id)) {
         copia[index].necessarios.push(nec);
       }
       return { ...prev, [setor]: copia };
@@ -104,55 +100,131 @@ export default function NovaRegraPage() {
   };
 
   const removerSetor = (setor: string) => {
-    setSetoresSelecionados(prev => prev.filter((s) => s !== setor));
+    setSetoresSelecionados(prev => prev.filter(s => s !== setor));
     const copia = { ...padronizados };
     delete copia[setor];
     setPadronizados(copia);
   };
 
-  const salvar = () => {
-    const payload = {
-      empresa: empresaSelecionada ? empresaSelecionada.id : empresaTexto.trim(),
-      descricao,
-      ativa: status,
-      erpId: erp?.id,
-      setores: setoresSelecionados,
-      parametros: padronizados,
-    };
+ const salvar = async () => {
+  if (!erp) return alert("Selecione um ERP.");
+  if (!empresaSelecionada) return alert("Selecione uma empresa.");
 
-    console.log("ENVIAR PRO BACKEND:", payload);
-    alert("Regra montada — ver console!");
+  const descFinal = descricao.trim() === "" ? "Regra automática" : descricao;
+
+  const setoresPayload = setoresSelecionados.map(setor => {
+    const lista = padronizados[setor] || [];
+
+    return {
+      nome: setor,
+      padroes: lista.map(item => item.padronizado.id),
+      necessarios: lista.flatMap(item => item.necessarios.map(n => n.id))
+    };
+  });
+
+  if (setoresPayload.length === 0) {
+    return alert("Adicione ao menos 1 setor e 1 parâmetro padronizado!");
+  }
+
+  const payload = {
+    empresaId: empresaSelecionada.id,
+    erpId: erp.id,
+    descricao: descFinal,
+    setores: setoresPayload,
+    ativa: status
   };
+
+  console.log("SETORES PAYLOAD:", setoresPayload);
+  console.log("ENVIANDO PAYLOAD:", payload);
+
+  try {
+    const res = await fetch("https://api.coraxy.com.br/api/regras", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const json = await res.json();
+
+    if (!res.ok) {
+      console.error("Erro ao salvar:", json);
+      return alert(json.message || "Erro ao salvar regras!");
+    }
+
+    alert("Regra salva com sucesso!");
+  } catch (err) {
+    console.error("ERRO FETCH:", err);
+    alert("Erro de conexão com API.");
+  }
+};
+
+
 
   return (
     <div className={styles.backgroundGradient}>
       <div className={styles.container}>
         <h2 className={styles.title}>Criar Regra de Negócio</h2>
 
-        {/* ===================== INFORMAÇÕES GERAIS ===================== */}
         <Card title="Informações Gerais" className={styles.card}>
           <label className={styles.label}>Empresa</label>
           <div className={styles.empresaRow}>
-            <InputText value={empresaTexto} onChange={(e) => setEmpresaTexto(e.target.value)} className={styles.input} placeholder="Digite o nome da empresa..." />
-            <Dropdown value={empresaSelecionada} options={empresas} onChange={(e) => setEmpresaSelecionada(e.value)} optionLabel="nome" placeholder="Selecionar do banco" className={styles.input} />
+            <InputText
+              value={empresaTexto}
+              onChange={(e) => setEmpresaTexto(e.target.value)}
+              className={styles.input}
+              placeholder="Digite o nome da empresa..."
+            />
+            <Dropdown
+              value={empresaSelecionada}
+              options={empresas}
+              onChange={(e) => setEmpresaSelecionada(e.value)}
+              optionLabel="nome"
+              placeholder="Selecionar do banco"
+              className={styles.input}
+            />
           </div>
 
           <label className={styles.label}>Descrição</label>
-          <InputText value={descricao} onChange={(e) => setDescricao(e.target.value)} className={styles.input} placeholder="Opcional" />
+          <InputText
+            value={descricao}
+            onChange={(e) => setDescricao(e.target.value)}
+            className={styles.input}
+            placeholder="Opcional"
+          />
 
           <label className={styles.label}>ERP</label>
-          <Dropdown value={erp} options={erps} onChange={(e) => setErp(e.value)} optionLabel="nome" placeholder="Selecione um ERP" className={styles.input} />
+          <Dropdown
+            value={erp}
+            options={erps}
+            onChange={(e) => setErp(e.value)}
+            optionLabel="nome"
+            placeholder="Selecione um ERP"
+            className={styles.input}
+          />
 
-          <ToggleButton onLabel="Ativa" offLabel="Inativa" checked={status} onChange={(e) => setStatus(e.value)} className={styles.toggle} />
+          <ToggleButton
+            onLabel="Ativa"
+            offLabel="Inativa"
+            checked={status}
+            onChange={(e) => setStatus(e.value)}
+            className={styles.toggle}
+          />
         </Card>
 
-        {/* ===================== SETORES ===================== */}
         <Card title="Setores" className={styles.card}>
           <div className={styles.setorRow}>
-            <Dropdown value={null} options={setoresMock} onChange={(e) => !setoresSelecionados.includes(e.value) && setSetoresSelecionados([...setoresSelecionados, e.value])} placeholder="Selecione um setor" className={styles.dropdownSelect} />
+            <Dropdown
+              value={null}
+              options={setoresMock}
+              onChange={(e) => !setoresSelecionados.includes(e.value) && setSetoresSelecionados(prev => [...prev, e.value])}
+              placeholder="Selecione um setor"
+              className={styles.dropdownSelect}
+            />
           </div>
 
-          {setoresSelecionados.length === 0 && <p className={styles.emptyText}>Nenhum setor adicionado ainda...</p>}
+          {setoresSelecionados.length === 0 && (
+            <p className={styles.emptyText}>Nenhum setor adicionado ainda...</p>
+          )}
 
           <div className={styles.setoresList}>
             {setoresSelecionados.map((setor, i) => (
@@ -164,7 +236,6 @@ export default function NovaRegraPage() {
           </div>
         </Card>
 
-        {/* ===================== PARÂMETROS ===================== */}
         {setoresSelecionados.length > 0 && (
           <Card title="Parâmetros" className={styles.card}>
             {setoresSelecionados.map((setor) => (
@@ -172,7 +243,7 @@ export default function NovaRegraPage() {
                 <h4 className={styles.paramSetorTitle}>{setor}</h4>
 
                 <Dropdown
-                  options={padronizadosAPI}
+                  options={padronizadosAPI.filter(p => erp && p.erpId === erp.id)}
                   optionLabel="nome"
                   placeholder="Selecione um Parâmetro Padronizado"
                   className={styles.paramDropdown}
@@ -216,7 +287,6 @@ export default function NovaRegraPage() {
           </Card>
         )}
 
-        {/* ===================== SALVAR ===================== */}
         <div className={styles.saveBtnContainer}>
           <Button label="Salvar Regra" icon="pi pi-check" className={styles.btnSave} onClick={salvar} />
         </div>
