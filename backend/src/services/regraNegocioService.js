@@ -241,7 +241,6 @@ export default {
   showById,
   update,
   destroy,
-  vincularEmpresas,
   desvincularEmpresa,
   listarRegrasPorEmpresa,
 };
