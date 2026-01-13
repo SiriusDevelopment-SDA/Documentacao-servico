@@ -3,32 +3,47 @@ import prismaClient from "../prismaClient.js";
 async function create(body) {
   const { descricao, erpId, empresaId, setores } = body;
 
-  // 1) Criar a regra
+  // 1) Criar regra
   const regra = await prismaClient.regraNegocio.create({
     data: {
       descricao: descricao || "Regra de Negócio",
       ativa: true,
-      erpId,
-      parametros_padrao: "[]",
-      parametros_obrigatorios: "[]",
-      setores // salva JSON direto
+      erpId
     }
   });
 
-  // 2) Vincular NECESSÁRIOS (no pivot)
+  // 2) Criar SETORES + PADRÕES + NECESSÁRIOS
   for (const setor of setores) {
+    const setorCriado = await prismaClient.regraSetor.create({
+      data: {
+        nome: setor.nome,
+        regraId: regra.id
+      }
+    });
+
+    // → VINCULA PADRÃO
+    if (setor.parametroPadraoId) {
+      await prismaClient.setorParametroPadrao.create({
+        data: {
+          setorId: setorCriado.id,
+          padraoId: setor.parametroPadraoId
+        }
+      });
+    }
+
+    // → VINCULA NECESSÁRIOS
     if (Array.isArray(setor.parametrosNecessarios)) {
-      await prismaClient.regraNegocioParametroNecessario.createMany({
+      await prismaClient.setorParametroNecessario.createMany({
         data: setor.parametrosNecessarios.map(necId => ({
-          regraId: regra.id,
-          parametroNecessarioId: Number(necId),
+          setorId: setorCriado.id,
+          necessarioId: Number(necId)
         })),
-        skipDuplicates: true,
+        skipDuplicates: true
       });
     }
   }
 
-  // 3) Vincular empresa se existir
+  // 3) Vincular empresa (opcional)
   if (empresaId) {
     await prismaClient.empresaRegra.create({
       data: {
@@ -40,8 +55,6 @@ async function create(body) {
 
   return regra;
 }
-
-
 
 
 /**

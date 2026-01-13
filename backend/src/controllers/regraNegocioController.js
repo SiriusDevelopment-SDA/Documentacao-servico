@@ -1,28 +1,22 @@
 import regraNegocioService from "../services/regraNegocioService.js";
 
 /* ======================================================
-   CREATE — NOVO FORMATO (UMA REGRA COM MÚLTIPLOS SETORES)
+   CREATE — Cria Regra com múltiplos setores
 ====================================================== */
 async function create(req, res) {
   try {
     const body = req.body;
 
     if (!body.setores || !Array.isArray(body.setores) || body.setores.length === 0) {
-      return res.status(400).json({
-        message: "Envie 'setores[]' com ao menos 1 setor"
-      });
+      return res.status(400).json({ message: "Envie 'setores[]' com ao menos 1 setor" });
     }
 
     if (!body.erpId) {
-      return res.status(400).json({
-        message: "Campo 'erpId' é obrigatório"
-      });
+      return res.status(400).json({ message: "Campo 'erpId' é obrigatório" });
     }
 
     if (body.empresaId && isNaN(Number(body.empresaId))) {
-      return res.status(400).json({
-        message: "Campo 'empresaId' deve ser numérico"
-      });
+      return res.status(400).json({ message: "Campo 'empresaId' deve ser numérico" });
     }
 
     const regra = await regraNegocioService.create(body);
@@ -38,12 +32,25 @@ async function create(req, res) {
 }
 
 /* ======================================================
-   READ ALL
+   READ ALL — retorna regra + setores
 ====================================================== */
 async function showAll(req, res) {
   try {
-    const regras = await regraNegocioService.showAll();
+    const regras = await regraNegocioService.showAll({
+      include: {
+        erp: true,
+        empresas: { include: { empresa: true } },
+        setores: {
+          include: {
+            padroes: { include: { padrao: true } },
+            necessarios: { include: { necessario: true } },
+          }
+        }
+      }
+    });
+
     return res.status(200).json(regras);
+
   } catch (error) {
     return res.status(500).json({
       message: "Erro ao buscar regras de negócio",
@@ -53,13 +60,24 @@ async function showAll(req, res) {
 }
 
 /* ======================================================
-   READ BY ID
+   READ BY ID — retorna regra + setores
 ====================================================== */
 async function showById(req, res) {
   try {
     const { id } = req.params;
 
-    const regra = await regraNegocioService.showById(id);
+    const regra = await regraNegocioService.showById(id, {
+      include: {
+        erp: true,
+        empresas: { include: { empresa: true } },
+        setores: {
+          include: {
+            padroes: { include: { padrao: true } },
+            necessarios: { include: { necessario: true } },
+          }
+        }
+      }
+    });
 
     if (!regra) {
       return res.status(404).json({ message: "Regra de negócio não encontrada" });
@@ -76,23 +94,16 @@ async function showById(req, res) {
 }
 
 /* ======================================================
-   UPDATE
+   UPDATE — Atualiza apenas campos simples
 ====================================================== */
 async function update(req, res) {
   try {
     const { id } = req.params;
-    const { descricao, ativa, setores } = req.body;
-
-    if (setores && (!Array.isArray(setores) || setores.length === 0)) {
-      return res.status(400).json({
-        message: "Se enviado, 'setores' deve ser um array com ao menos 1 item"
-      });
-    }
+    const { descricao, ativa } = req.body;
 
     const regra = await regraNegocioService.update(id, {
       descricao,
-      ativa,
-      setores
+      ativa
     });
 
     return res.status(200).json(regra);
@@ -115,6 +126,7 @@ async function destroy(req, res) {
     await regraNegocioService.destroy(id);
 
     return res.status(204).send();
+
   } catch (error) {
     return res.status(500).json({
       message: "Erro ao remover a regra de negócio",
@@ -124,7 +136,7 @@ async function destroy(req, res) {
 }
 
 /* ======================================================
-   VÍNCULO REGRA ⇄ EMPRESA
+   VINCULAR EMPRESAS
 ====================================================== */
 async function vincularEmpresas(req, res) {
   try {
@@ -152,7 +164,7 @@ async function vincularEmpresas(req, res) {
 }
 
 /* ======================================================
-   DESVINCULAR REGRA ⇄ EMPRESA
+   DESVINCULAR EMPRESA
 ====================================================== */
 async function desvincularEmpresa(req, res) {
   try {
