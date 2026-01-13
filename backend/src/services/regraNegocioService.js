@@ -23,7 +23,7 @@ async function create(body) {
 
     // vincula padronizados
     if (Array.isArray(setor.padroes)) {
-      await prisma.setorParametroPadrao.createMany({
+      await prismaClient.setorParametroPadrao.createMany({
         data: setor.padroes.map(id => ({
           setorId: setorCriado.id,
           padraoId: id
