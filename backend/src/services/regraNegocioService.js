@@ -148,18 +148,6 @@ async function update(id, data) {
   return prismaClient.regraNegocio.update({
     where: { id: Number(id) },
     data: {
-<<<<<<< HEAD
-      descricao,
-      ativa,
-      setores: setores ?? undefined,
-    }
-  });
-}
-
-/* ======================================================
-   DELETE
-====================================================== */
-=======
       setor: data.setor,
       descricao: data.descricao,
       ativa: data.ativa,
@@ -170,7 +158,6 @@ async function update(id, data) {
 /**
  * 🔥 CORREÇÃO DO DELETE COM LIMPEZA DE PIVOTS
  */
->>>>>>> develop
 async function destroy(id) {
   const regraId = Number(id);
 
@@ -186,11 +173,7 @@ async function destroy(id) {
 
   // 3️⃣ Remove finalmente a regra
   return prismaClient.regraNegocio.delete({
-<<<<<<< HEAD
-    where: { id: Number(id) }
-=======
     where: { id: regraId },
->>>>>>> develop
   });
 }
 
