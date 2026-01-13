@@ -7,274 +7,157 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/**
- * =====================================================
- * SISTEMA
- * =====================================================
- */
-
 model Sistema {
   id      Int     @id @default(autoincrement())
   nome    String  @unique
-  logoUrl String?
   ativo   Boolean @default(true)
-
-  erps Erp[] @relation("SistemaErps")
+  logoUrl String?
+  erps    Erp[]   @relation("SistemaErps")
 }
-
-/**
- * =====================================================
- * ERP
- * =====================================================
- */
 
 model Erp {
-  id    Int     @id @default(autoincrement())
-  nome  String  @unique
-  ativo Boolean @default(true)
-
-  sistemas Sistema[] @relation("SistemaErps")
-
-  documentacoes Documentacao[]
-  servicos      Servico[]
-  empresas      Empresa[]
-
-  regras                RegraNegocio[]
-  parametrosPadrao      ParametroPadrao[]
+  id                    Int                   @id @default(autoincrement())
+  nome                  String                @unique
+  ativo                 Boolean               @default(true)
+  documentacoes         Documentacao[]
+  empresas              Empresa[]
   parametrosNecessarios ParametroNecessario[]
+  parametrosPadrao      ParametroPadrao[]
+  regras                RegraNegocio[]
+  servicos              Servico[]
+  sistemas              Sistema[]             @relation("SistemaErps")
 }
 
-/**
- * =====================================================
- * DOCUMENTAÇÃO
- * =====================================================
- */
-
 model Documentacao {
-  id               Int      @id @default(autoincrement())
-  nome_empresa     String
-  nome_contratante String
-  documentado_por  String
-  data             DateTime
-  numero_contrato  String?
-  info_adicionais  String?
-  createdAt        DateTime @default(now())
-
-  erpId Int?
-  erp   Erp? @relation(fields: [erpId], references: [id])
-
+  id                Int               @id @default(autoincrement())
+  nome_empresa      String
+  nome_contratante  String
+  documentado_por   String
+  data              DateTime
+  numero_contrato   String?
+  info_adicionais   String?
+  createdAt         DateTime          @default(now())
+  erpId             Int?
+  erp               Erp?              @relation(fields: [erpId], references: [id])
   servicos          Servico[]
   servicosDesejados ServicoDesejado[]
 }
 
-/**
- * =====================================================
- * SERVIÇO
- * =====================================================
- */
-
 model Servico {
-  id Int @id @default(autoincrement())
-
-  nomeServicoId Int
-  nomeServico   NomeServico @relation(fields: [nomeServicoId], references: [id])
-
-  descricao  String?
-  instrucoes String?
-  ativo      Boolean @default(true)
-
-  motivoDesativacao String?
-  dataDesativacao   DateTime?
-
-  sem_necessidade_api Boolean @default(false)
+  id                  Int          @id @default(autoincrement())
+  descricao           String?
+  instrucoes          String?
+  ativo               Boolean      @default(true)
+  sem_necessidade_api Boolean      @default(false)
   endpoint            String?
   parametros_padrao   Json?
-
-  exige_contrato    Boolean @default(false)
-  exige_cpf_cnpj    Boolean @default(false)
-  exige_login_ativo Boolean @default(false)
-
-  responsavel_padrao String?
-  createdAt          DateTime @default(now())
-
-  documentacaoId Int
-  documentacao   Documentacao @relation(fields: [documentacaoId], references: [id])
-
-  erpId Int
-  erp   Erp @relation(fields: [erpId], references: [id])
+  exige_contrato      Boolean      @default(false)
+  exige_cpf_cnpj      Boolean      @default(false)
+  exige_login_ativo   Boolean      @default(false)
+  responsavel_padrao  String?
+  createdAt           DateTime     @default(now())
+  documentacaoId      Int
+  erpId               Int
+  nomeServicoId       Int
+  dataDesativacao     DateTime?
+  motivoDesativacao   String?
+  documentacao        Documentacao @relation(fields: [documentacaoId], references: [id])
+  erp                 Erp          @relation(fields: [erpId], references: [id])
+  nomeServico         NomeServico  @relation(fields: [nomeServicoId], references: [id])
 }
-
-/**
- * =====================================================
- * SERVIÇO DESEJADO
- * =====================================================
- */
 
 model ServicoDesejado {
-  id        Int      @id @default(autoincrement())
-  descricao String?
-  createdAt DateTime @default(now())
-
+  id             Int          @id @default(autoincrement())
+  descricao      String?
+  createdAt      DateTime     @default(now())
   documentacaoId Int
   documentacao   Documentacao @relation(fields: [documentacaoId], references: [id])
 }
 
-/**
- * =====================================================
- * NOME DO SERVIÇO
- * =====================================================
- */
-
 model NomeServico {
-  id   Int    @id @default(autoincrement())
-  nome String @unique
-
+  id       Int       @id @default(autoincrement())
+  nome     String    @unique
   servicos Servico[]
 }
 
-/**
- * =====================================================
- * EMPRESA
- * =====================================================
- */
-
 model Empresa {
-  id       Int     @id @default(autoincrement())
-  nome     String  @unique
-  cpf_cnpj String? @unique
-
-  erpId Int
-  erp   Erp @relation(fields: [erpId], references: [id])
-
-  regras EmpresaRegra[]
+  id       Int            @id @default(autoincrement())
+  nome     String         @unique
+  cpf_cnpj String?        @unique
+  erpId    Int
+  erp      Erp            @relation(fields: [erpId], references: [id])
+  regras   EmpresaRegra[]
 }
-
-/**
- * =====================================================
- * PARÂMETRO PADRÃO
- * =====================================================
- */
 
 model ParametroPadrao {
-  id    Int     @id @default(autoincrement())
-  nome  String
-  ativo Boolean @default(true)
-
-  erpId Int
-  erp   Erp @relation(fields: [erpId], references: [id])
-
-  regras                RegraNegocio[]
+  id                    Int                                  @id @default(autoincrement())
+  nome                  String
+  ativo                 Boolean                              @default(true)
+  erpId                 Int
+  erp                   Erp                                  @relation(fields: [erpId], references: [id])
   parametrosNecessarios ParametroPadraoParametroNecessario[]
+  regras                RegraNegocio[]
 
   @@unique([nome, erpId])
 }
-
-/**
- * =====================================================
- * PARÂMETRO NECESSÁRIO
- * =====================================================
- */
 
 model ParametroNecessario {
-  id    Int     @id @default(autoincrement())
-  nome  String
-  ativo Boolean @default(true)
-
-  erpId Int
-  erp   Erp @relation(fields: [erpId], references: [id])
-
+  id               Int                                  @id @default(autoincrement())
+  nome             String
+  ativo            Boolean                              @default(true)
+  erpId            Int
+  erp              Erp                                  @relation(fields: [erpId], references: [id])
   parametrosPadrao ParametroPadraoParametroNecessario[]
-
-  // ⚠️ LEGADO
-  regras RegraNegocioParametroNecessario[]
+  regras           RegraNegocioParametroNecessario[]
 
   @@unique([nome, erpId])
 }
 
-/**
- * =====================================================
- * PADRÃO ⇄ NECESSÁRIO (CONTRATO) ✅
- * =====================================================
- */
-
 model ParametroPadraoParametroNecessario {
-  id Int @id @default(autoincrement())
-
+  id                    Int                 @id @default(autoincrement())
   parametroPadraoId     Int
   parametroNecessarioId Int
-
-  obrigatorio Boolean @default(true)
-  ordem       Int?
-
-  parametroPadrao     ParametroPadrao     @relation(fields: [parametroPadraoId], references: [id])
-  parametroNecessario ParametroNecessario @relation(fields: [parametroNecessarioId], references: [id])
+  obrigatorio           Boolean             @default(true)
+  ordem                 Int?
+  parametroNecessario   ParametroNecessario @relation(fields: [parametroNecessarioId], references: [id])
+  parametroPadrao       ParametroPadrao     @relation(fields: [parametroPadraoId], references: [id])
 
   @@unique([parametroPadraoId, parametroNecessarioId])
 }
 
-/**
- * =====================================================
- * REGRA DE NEGÓCIO
- * =====================================================
- */
-
 model RegraNegocio {
-  id Int @id @default(autoincrement())
-
-  // LEGADO
-  setor                   String?
+  id                      Int                               @id @default(autoincrement())
   parametros_padrao       String
   parametros_obrigatorios String
-
-  descricao String
-  ativa     Boolean @default(true)
-
-  erpId Int
-  erp   Erp @relation(fields: [erpId], references: [id])
-
-  parametroPadraoId Int
-  parametroPadrao   ParametroPadrao @relation(fields: [parametroPadraoId], references: [id])
-
-  setores Json? // <- opcional enquanto consolidamos
-
-  parametrosNecessarios RegraNegocioParametroNecessario[]
-  empresas              EmpresaRegra[]
+  descricao               String
+  ativa                   Boolean                           @default(true)
+  erpId                   Int
+  parametroPadraoId       Int
+  setor                   String
+  setores                 Json?
+  empresas                EmpresaRegra[]
+  erp                     Erp                               @relation(fields: [erpId], references: [id])
+  parametroPadrao         ParametroPadrao                   @relation(fields: [parametroPadraoId], references: [id])
+  parametrosNecessarios   RegraNegocioParametroNecessario[]
 }
 
-/**
- * =====================================================
- * REGRA ⇄ NECESSÁRIO (LEGADO)
- * =====================================================
- */
-
 model RegraNegocioParametroNecessario {
-  id Int @id @default(autoincrement())
-
+  id                    Int                 @id @default(autoincrement())
   regraId               Int
   parametroNecessarioId Int
-
-  regra               RegraNegocio        @relation(fields: [regraId], references: [id])
-  parametroNecessario ParametroNecessario @relation(fields: [parametroNecessarioId], references: [id])
+  parametroNecessario   ParametroNecessario @relation(fields: [parametroNecessarioId], references: [id])
+  regra                 RegraNegocio        @relation(fields: [regraId], references: [id])
 
   @@unique([regraId, parametroNecessarioId])
 }
 
-/**
- * =====================================================
- * EMPRESA ⇄ REGRA
- * =====================================================
- */
-
 model EmpresaRegra {
-  id Int @id @default(autoincrement())
-
+  id        Int          @id @default(autoincrement())
   empresaId Int
   regraId   Int
-
-  empresa Empresa      @relation(fields: [empresaId], references: [id])
-  regra   RegraNegocio @relation(fields: [regraId], references: [id])
-
-  ativa Boolean @default(true)
+  ativa     Boolean      @default(true)
+  empresa   Empresa      @relation(fields: [empresaId], references: [id])
+  regra     RegraNegocio @relation(fields: [regraId], references: [id])
 
   @@unique([empresaId, regraId])
 }
