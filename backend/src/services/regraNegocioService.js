@@ -10,51 +10,44 @@ async function create(body) {
     throw new Error("Campos obrigatórios: erpId, setores[]");
   }
 
-  // 🔹 Usar o 1º setor como referência obrigatória (por regra do sistema)
-  const primeiro = setores[0];
-
-  if (!primeiro.parametroPadraoId) {
-    throw new Error("Cada setor precisa ter parametroPadraoId");
+  // 🔹 valida cada item do array
+  for (const item of setores) {
+    if (!item.parametroPadraoId) {
+      throw new Error("Cada item de 'setores[]' precisa ter parametroPadraoId");
+    }
   }
 
-  const parametrosPadraoArray = setores.map(s => s.parametroPadraoId);
-  const parametrosNecessariosArray = setores.flatMap(s => s.parametrosNecessarios || []);
-
-  // 🔹 Criar a regra com campos obrigatórios do Prisma
+  // 🔹 Cria regra base
   const regra = await prismaClient.regraNegocio.create({
     data: {
       descricao: descricao || "Regra de Negócio",
       ativa: true,
       erpId,
-
-      // Campos obrigatórios herdados
-      parametroPadraoId: Number(primeiro.parametroPadraoId),
-      setor: primeiro.nome,
-
-      // Strings obrigatórias (legado)
-      parametros_padrao: JSON.stringify(parametrosPadraoArray),
-      parametros_obrigatorios: JSON.stringify(parametrosNecessariosArray),
-
-      // Novo formato JSON
-      setores
+      parametros_padrao: "[]",
+      parametros_obrigatorios: "[]",
+      setores: setores
     }
   });
 
-  // 🔹 Vincular necessários via pivot
-  await prismaClient.regraNegocioParametroNecessario.createMany({
-    data: parametrosNecessariosArray.map(id => ({
-      regraId: regra.id,
-      parametroNecessarioId: Number(id)
-    })),
-    skipDuplicates: true
-  });
+  // 🔹 Pivot tabela para Necessários
+  for (const item of setores) {
+    if (Array.isArray(item.parametrosNecessarios)) {
+      await prismaClient.regraNegocioParametroNecessario.createMany({
+        data: item.parametrosNecessarios.map(necId => ({
+          regraId: regra.id,
+          parametroNecessarioId: Number(necId),
+        })),
+        skipDuplicates: true,
+      });
+    }
+  }
 
-  // 🔹 Vincular regra à empresa (se existir)
+  // 🔹 Pivot tabela Empresa-Regra
   if (empresaId) {
     await prismaClient.empresaRegra.create({
       data: {
         empresaId: Number(empresaId),
-        regraId: regra.id
+        regraId: regra.id,
       }
     });
   }
