@@ -161,34 +161,39 @@ async function update(id, data) {
 async function destroy(id) {
   const regraId = Number(id);
 
-  // 1️⃣ Remove vínculos com empresas
+  // 1. Buscar setores vinculados à regra
+  const setores = await prismaClient.regraSetor.findMany({
+    where: { regraId },
+    select: { id: true }
+  });
+
+  // 2. Deletar parâmetros dos setores
+  for (const setor of setores) {
+    await prismaClient.setorParametroPadrao.deleteMany({
+      where: { setorId: setor.id }
+    });
+
+    await prismaClient.setorParametroNecessario.deleteMany({
+      where: { setorId: setor.id }
+    });
+  }
+
+  // 3. Deletar setores
+  await prismaClient.regraSetor.deleteMany({
+    where: { regraId }
+  });
+
+  // 4. Deletar vínculos com empresas
   await prismaClient.empresaRegra.deleteMany({
-    where: { regraId },
+    where: { regraId }
   });
 
-  // 2️⃣ Remove vínculo com pivot de parâmetros necessários
-  await prismaClient.regraNegocioParametroNecessario.deleteMany({
-    where: { regraId },
-  });
-
-  // 3️⃣ Remove finalmente a regra
+  // 5. Deletar a regra
   return prismaClient.regraNegocio.delete({
-    where: { id: regraId },
+    where: { id: regraId }
   });
 }
 
-/* ======================================================
-   VINCULO EMPRESA
-====================================================== */
-async function vincularEmpresas(regraId, empresasIds) {
-  return prismaClient.empresaRegra.createMany({
-    data: empresasIds.map(empId => ({
-      empresaId: Number(empId),
-      regraId: Number(regraId)
-    })),
-    skipDuplicates: true,
-  });
-}
 
 /* ======================================================
    DESVINCULAR EMPRESA
