@@ -3,7 +3,7 @@ import prismaClient from "../prismaClient.js";
 async function create(body) {
   const { descricao, erpId, empresaId, setores } = body;
 
-  const regra = await prisma.regraNegocio.create({
+  const regra = await prismaClient.regraNegocio.create({
     data: {
       descricao,
       ativa: true,
