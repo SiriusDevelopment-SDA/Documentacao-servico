@@ -1,0 +1,201 @@
+.tableWrapper {
+  margin-top: 35px;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  padding: 0;
+}
+
+/* ============================
+   PRIMEREACT TABLE OVERRIDES
+============================ */
+
+/* BASE */
+:global(.p-datatable) {
+  background: transparent !important;
+  border: none !important;
+  font-size: 0.9rem !important;
+}
+
+/* HEADER */
+:global(.p-datatable-thead > tr > th) {
+  background: rgba(18, 20, 23, 0.95) !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  padding: 12px 14px !important;
+  border: none !important;
+  font-size: 0.92rem !important;
+}
+
+/* CELLS */
+:global(.p-datatable-tbody > tr > td) {
+  padding: 10px 14px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #e2e2e2 !important;
+  backdrop-filter: blur(3px);
+}
+
+/* HOVER */
+:global(.p-datatable-tbody > tr:hover) {
+  background: rgba(255, 255, 255, 0.07) !important;
+  cursor: pointer;
+}
+
+/* REMOVE BORDER LAST ROW */
+:global(.p-datatable-tbody > tr:last-child > td) {
+  border-bottom: none !important;
+}
+
+/* ROW HEIGHT */
+:global(.p-datatable-tbody > tr) {
+  height: 48px !important;
+}
+
+/* ============================
+   TAG STATUS
+============================ */
+:global(.p-tag-success) {
+  background: #28c76f !important;
+  color: #fff !important;
+}
+
+:global(.p-tag-danger) {
+  background: #ea5455 !important;
+  color: #fff !important;
+}
+
+/* ============================
+   BUTTONS
+============================ */
+:global(.p-button) {
+  border-radius: 6px !important;
+  font-size: 0.78rem !important;
+  padding: 4px 10px !important;
+  font-weight: 600 !important;
+}
+
+:global(.p-button-secondary) {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #dadada !important;
+}
+
+:global(.p-button-danger) {
+  background: rgba(255, 50, 50, 0.12) !important;
+  border-color: #ff3b3b !important;
+  color: #ff3b3b !important;
+}
+
+:global(.p-button:enabled:hover) {
+  filter: brightness(1.1);
+}
+
+/* ============================
+   PAGINATOR
+============================ */
+:global(.p-paginator) {
+  background: rgba(18, 20, 23, 0.95) !important;
+  border: none !important;
+  padding: 10px !important;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+:global(.p-paginator-page.p-highlight) {
+  background: #f2c010 !important;
+  color: #000 !important;
+  font-weight: 700 !important;
+  border: none !important;
+  border-radius: 6px !important;
+}
+
+:global(.p-paginator-page) {
+  border-radius: 6px !important;
+}
+
+/* ============================
+   DROPDOWN (PAGE SIZE)
+============================ */
+:global(.p-dropdown) {
+  background: #101014 !important;
+  border: 1px solid #333 !important;
+  color: #e2e2e2 !important;
+}
+
+:global(.p-dropdown-items-wrapper) {
+  background: #101014 !important;
+  border: 1px solid #333 !important;
+}
+
+:global(.p-dropdown-item) {
+  color: #dcdcdc !important;
+}
+
+:global(.p-dropdown-item:hover) {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ============================
+   SCROLLBAR DA DROPDOWN
+============================ */
+:global(.p-dropdown-items-wrapper::-webkit-scrollbar) {
+  width: 6px;
+}
+:global(.p-dropdown-items-wrapper::-webkit-scrollbar-thumb) {
+  background: #555;
+  border-radius: 4px;
+}
+:global(.p-dropdown-items-wrapper::-webkit-scrollbar-thumb:hover) {
+  background: #777;
+}
+
+.botao-salvar {
+  width: 100%;
+  background: #b388ff !important;     // lilás
+  border: none !important;
+  color: #121212 !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  padding: 10px 0 !important;
+  font-size: 0.95rem !important;
+  transition: .2s ease;
+}
+
+.botao-salvar:hover {
+  filter: brightness(1.15);
+  transform: translateY(-2px);
+}
+
+.botao-salvar:active {
+  transform: translateY(0);
+}
+
+/* === DESGRUDAR CONTEÚDO DO MODAL === */
+:global(.p-dialog-content) {
+  padding: 20px 28px !important;
+}
+
+/* labels */
+:global(.p-dialog-content label) {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+/* Inputs, dropdowns, selects */
+:global(.p-dialog-content .p-inputtext),
+:global(.p-dialog-content .p-dropdown) {
+  margin-bottom: 18px;
+  width: 100%;
+}
+
+/* Botão salvar */
+:global(.p-dialog-content .p-button) {
+  margin-top: 14px;
+  width: 100%;
+  border-radius: 8px;
+}
+
