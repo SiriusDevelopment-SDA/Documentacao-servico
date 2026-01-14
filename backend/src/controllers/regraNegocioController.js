@@ -96,18 +96,50 @@ async function showById(req, res) {
 /* ======================================================
    UPDATE — Atualiza apenas campos simples
 ====================================================== */
+/* ======================================================
+   UPDATE — Atualiza regra + setores + parâmetros (pivôs)
+====================================================== */
 async function update(req, res) {
   try {
     const { id } = req.params;
-    const { descricao, ativa } = req.body;
+    const { descricao, ativa, setores } = req.body;
+
+    // Validações leves (evita payload quebrado)
+    if (setores !== undefined) {
+      if (!Array.isArray(setores)) {
+        return res.status(400).json({
+          message: "Campo 'setores' deve ser um array.",
+        });
+      }
+
+      for (const s of setores) {
+        if (!s?.id) {
+          return res.status(400).json({
+            message: "Cada item de 'setores[]' precisa conter o campo 'id' (id do regraSetor).",
+          });
+        }
+
+        if (s.padroes !== undefined && !Array.isArray(s.padroes)) {
+          return res.status(400).json({
+            message: "Campo 'setores[].padroes' deve ser um array de IDs.",
+          });
+        }
+
+        if (s.necessarios !== undefined && !Array.isArray(s.necessarios)) {
+          return res.status(400).json({
+            message: "Campo 'setores[].necessarios' deve ser um array de IDs.",
+          });
+        }
+      }
+    }
 
     const regra = await regraNegocioService.update(id, {
       descricao,
-      ativa
+      ativa,
+      setores, // <- ESSENCIAL para atualizar padronizados/necessários
     });
 
     return res.status(200).json(regra);
-
   } catch (error) {
     return res.status(500).json({
       message: "Erro ao atualizar a regra de negócio",
@@ -115,6 +147,7 @@ async function update(req, res) {
     });
   }
 }
+
 
 /* ======================================================
    DELETE
