@@ -20,9 +20,7 @@ async function create(req, res) {
     }
 
     const regra = await regraNegocioService.create(body);
-
     return res.status(201).json(regra);
-
   } catch (error) {
     return res.status(500).json({
       message: "Erro ao criar regra",
@@ -36,21 +34,9 @@ async function create(req, res) {
 ====================================================== */
 async function showAll(req, res) {
   try {
-    const regras = await regraNegocioService.showAll({
-      include: {
-        erp: true,
-        empresas: { include: { empresa: true } },
-        setores: {
-          include: {
-            padroes: { include: { padrao: true } },
-            necessarios: { include: { necessario: true } },
-          }
-        }
-      }
-    });
-
+    // A service já faz include
+    const regras = await regraNegocioService.showAll();
     return res.status(200).json(regras);
-
   } catch (error) {
     return res.status(500).json({
       message: "Erro ao buscar regras de negócio",
@@ -66,25 +52,14 @@ async function showById(req, res) {
   try {
     const { id } = req.params;
 
-    const regra = await regraNegocioService.showById(id, {
-      include: {
-        erp: true,
-        empresas: { include: { empresa: true } },
-        setores: {
-          include: {
-            padroes: { include: { padrao: true } },
-            necessarios: { include: { necessario: true } },
-          }
-        }
-      }
-    });
+    // A service já faz include
+    const regra = await regraNegocioService.showById(id);
 
     if (!regra) {
       return res.status(404).json({ message: "Regra de negócio não encontrada" });
     }
 
     return res.status(200).json(regra);
-
   } catch (error) {
     return res.status(500).json({
       message: "Erro ao buscar regra de negócio",
@@ -94,10 +69,9 @@ async function showById(req, res) {
 }
 
 /* ======================================================
-   UPDATE — Atualiza apenas campos simples
-====================================================== */
-/* ======================================================
    UPDATE — Atualiza regra + setores + parâmetros (pivôs)
+   Aceita:
+   setores[] = [{ id?, nome?, padroes?: number[], necessarios?: number[] }]
 ====================================================== */
 async function update(req, res) {
   try {
@@ -113,9 +87,14 @@ async function update(req, res) {
       }
 
       for (const s of setores) {
-        if (!s?.id) {
+        const idNum = Number(s?.id);
+        const temIdValido = Number.isFinite(idNum);
+        const temNomeValido = typeof s?.nome === "string" && s.nome.trim().length > 0;
+
+        // IMPORTANTE: permite setor novo (mock) vindo sem id, desde que tenha nome
+        if (!temIdValido && !temNomeValido) {
           return res.status(400).json({
-            message: "Cada item de 'setores[]' precisa conter o campo 'id' (id do regraSetor).",
+            message: "Cada item de 'setores[]' deve conter 'id' (numérico) ou 'nome' (string).",
           });
         }
 
@@ -136,7 +115,7 @@ async function update(req, res) {
     const regra = await regraNegocioService.update(id, {
       descricao,
       ativa,
-      setores, // <- ESSENCIAL para atualizar padronizados/necessários
+      setores, // <- ESSENCIAL para atualizar/crear pivôs
     });
 
     return res.status(200).json(regra);
@@ -148,7 +127,6 @@ async function update(req, res) {
   }
 }
 
-
 /* ======================================================
    DELETE
 ====================================================== */
@@ -157,9 +135,7 @@ async function destroy(req, res) {
     const { id } = req.params;
 
     await regraNegocioService.destroy(id);
-
     return res.status(204).send();
-
   } catch (error) {
     return res.status(500).json({
       message: "Erro ao remover a regra de negócio",
@@ -187,7 +163,6 @@ async function vincularEmpresas(req, res) {
     return res.status(200).json({
       message: "Empresas vinculadas à regra com sucesso",
     });
-
   } catch (error) {
     return res.status(500).json({
       message: "Erro ao vincular empresas à regra",
@@ -208,7 +183,6 @@ async function desvincularEmpresa(req, res) {
     return res.status(200).json({
       message: "Empresa desvinculada da regra com sucesso",
     });
-
   } catch (error) {
     return res.status(500).json({
       message: "Erro ao desvincular empresa da regra",
@@ -226,7 +200,7 @@ async function listarPorEmpresa(req, res) {
 
     if (!empresaId) {
       return res.status(400).json({
-        message: "Informe o ID da empresa"
+        message: "Informe o ID da empresa",
       });
     }
 
@@ -235,7 +209,6 @@ async function listarPorEmpresa(req, res) {
     });
 
     return res.status(200).json(regras);
-
   } catch (error) {
     return res.status(500).json({
       message: "Erro ao listar regras por empresa",

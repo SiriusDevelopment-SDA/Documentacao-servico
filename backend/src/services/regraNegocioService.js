@@ -144,6 +144,9 @@ async function showById(id) {
 /* ======================================================
    UPDATE (CORRIGIDO: SETORES + PADRÕES + NECESSÁRIOS)
 ====================================================== */
+/* ======================================================
+   UPDATE (SETOR POR ID OU NOME + ATUALIZA PIVÔS)
+====================================================== */
 async function update(id, data) {
   const regraId = Number(id);
   const { descricao, ativa, setores } = data;
@@ -161,37 +164,78 @@ async function update(id, data) {
     // 2) Atualiza setores + pivôs (se vier setores no payload)
     if (Array.isArray(setores)) {
       for (const setor of setores) {
-        if (!setor?.id) {
+        const idNum = Number(setor?.id);
+        const temIdValido = Number.isFinite(idNum);
+        const temNomeValido =
+          typeof setor?.nome === "string" && setor.nome.trim().length > 0;
+
+        if (!temIdValido && !temNomeValido) {
           throw new Error(
-            "Cada item de 'setores[]' precisa conter o campo 'id' (id do regraSetor)."
+            "Cada item de 'setores[]' deve conter 'id' (numérico) ou 'nome' (string)."
           );
         }
 
-        const setorId = Number(setor.id);
+        // 2.1) Resolve setorId:
+        // - se veio id válido, garante que pertence à regra
+        // - se veio só nome, busca na regra; se não existir, cria
+        let setorId;
 
-        // 2.1) Garante que o setor pertence à regra (evita atualizar setor errado)
-        const setorExiste = await tx.regraSetor.findFirst({
-          where: { id: setorId, regraId },
-          select: { id: true },
-        });
-
-        if (!setorExiste) {
-          throw new Error(
-            `Setor (regraSetor) ${setorId} não pertence à regra ${regraId}.`
-          );
-        }
-
-        // 2.2) Atualiza nome do setor (opcional)
-        if (setor.nome !== undefined) {
-          await tx.regraSetor.update({
-            where: { id: setorId },
-            data: { nome: setor.nome || "Setor" },
+        if (temIdValido) {
+          const setorExiste = await tx.regraSetor.findFirst({
+            where: { id: idNum, regraId },
+            select: { id: true },
           });
+
+          if (!setorExiste) {
+            throw new Error(
+              `Setor (regraSetor) ${idNum} não pertence à regra ${regraId}.`
+            );
+          }
+
+          setorId = idNum;
+
+          // opcional: atualiza nome se veio
+          if (temNomeValido) {
+            await tx.regraSetor.update({
+              where: { id: setorId },
+              data: { nome: setor.nome.trim() },
+            });
+          }
+        } else {
+          // veio só nome (mock)
+          const nomeSetor = setor.nome.trim();
+
+          const existente = await tx.regraSetor.findFirst({
+            where: {
+              regraId,
+              nome: { equals: nomeSetor, mode: "insensitive" },
+            },
+            select: { id: true },
+          });
+
+          if (existente) {
+            setorId = existente.id;
+          } else {
+            const criado = await tx.regraSetor.create({
+              data: {
+                regraId,
+                nome: nomeSetor,
+              },
+              select: { id: true },
+            });
+            setorId = criado.id;
+          }
         }
 
         // ---------- PADRÕES (limpa e recria) ----------
         if (Array.isArray(setor.padroes)) {
-          const padroesIDs = setor.padroes.map(Number).filter((n) => !Number.isNaN(n));
+          const padroesIDs = Array.from(
+            new Set(
+              setor.padroes
+                .map(Number)
+                .filter((n) => Number.isFinite(n))
+            )
+          );
 
           // valida IDs se tiver algum
           if (padroesIDs.length > 0) {
@@ -204,32 +248,29 @@ async function update(id, data) {
             const faltando = padroesIDs.filter((pid) => !encontrados.includes(pid));
 
             if (faltando.length > 0) {
-              throw new Error(
-                `Os IDs de padrões não existem: ${faltando.join(", ")}`
-              );
+              throw new Error(`Os IDs de padrões não existem: ${faltando.join(", ")}`);
             }
+          }
 
-            // limpa pivôs
-            await tx.setorParametroPadrao.deleteMany({ where: { setorId } });
+          await tx.setorParametroPadrao.deleteMany({ where: { setorId } });
 
-            // recria pivôs
+          if (padroesIDs.length > 0) {
             await tx.setorParametroPadrao.createMany({
-              data: encontrados.map((pid) => ({
-                setorId,
-                padraoId: pid,
-              })),
+              data: padroesIDs.map((pid) => ({ setorId, padraoId: pid })),
+              skipDuplicates: true,
             });
-          } else {
-            // se veio array vazio, significa "zerar"
-            await tx.setorParametroPadrao.deleteMany({ where: { setorId } });
           }
         }
 
         // ---------- NECESSÁRIOS (limpa e recria) ----------
         if (Array.isArray(setor.necessarios)) {
-          const necessariosIDs = setor.necessarios
-            .map(Number)
-            .filter((n) => !Number.isNaN(n));
+          const necessariosIDs = Array.from(
+            new Set(
+              setor.necessarios
+                .map(Number)
+                .filter((n) => Number.isFinite(n))
+            )
+          );
 
           if (necessariosIDs.length > 0) {
             const existentes = await tx.parametroNecessario.findMany({
@@ -238,26 +279,22 @@ async function update(id, data) {
             });
 
             const encontrados = existentes.map((e) => e.id);
-            const faltando = necessariosIDs.filter(
-              (nid) => !encontrados.includes(nid)
-            );
+            const faltando = necessariosIDs.filter((nid) => !encontrados.includes(nid));
 
             if (faltando.length > 0) {
               throw new Error(
                 `Os IDs de necessários não existem: ${faltando.join(", ")}`
               );
             }
+          }
 
-            await tx.setorParametroNecessario.deleteMany({ where: { setorId } });
+          await tx.setorParametroNecessario.deleteMany({ where: { setorId } });
 
+          if (necessariosIDs.length > 0) {
             await tx.setorParametroNecessario.createMany({
-              data: encontrados.map((nid) => ({
-                setorId,
-                necessarioId: nid,
-              })),
+              data: necessariosIDs.map((nid) => ({ setorId, necessarioId: nid })),
+              skipDuplicates: true,
             });
-          } else {
-            await tx.setorParametroNecessario.deleteMany({ where: { setorId } });
           }
         }
       }
@@ -279,6 +316,7 @@ async function update(id, data) {
     });
   });
 }
+
 
 /**
  * 🔥 CORREÇÃO DO DELETE COM LIMPEZA DE PIVOTS
