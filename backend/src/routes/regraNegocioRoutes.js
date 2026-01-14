@@ -3,6 +3,7 @@ import regraNegocioController from "../controllers/regraNegocioController.js";
 
 const router = Router();
 
+router.get("/regras/ultima", regraNegocioController.getLast);
 router.post("/regras", regraNegocioController.create);
 router.get("/regras", regraNegocioController.showAll);
 router.get("/regras/:id", regraNegocioController.showById);
@@ -27,6 +28,6 @@ router.get(
   regraNegocioController.listarPorEmpresa
 );
 
-router.get("/regras/last", regraNegocioController.getLast);
+
 
 export default router;

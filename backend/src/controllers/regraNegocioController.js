@@ -34,15 +34,16 @@ async function create(req, res) {
 ====================================================== */
 async function getLast(req, res) {
   try {
-    const last = await regraNegocioService.getLast();
-    return res.status(200).json(last || null);
+    const regra = await regraNegocioService.getLast();
+    return res.status(200).json(regra || null);
   } catch (error) {
     return res.status(500).json({
-      message: "Erro ao buscar última regra de negócio",
+      message: "Erro ao buscar última regra",
       error: error.message,
     });
   }
 }
+
 
 /* ======================================================
    READ ALL — retorna regra + setores

@@ -145,10 +145,18 @@ async function getLast() {
   return prismaClient.regraNegocio.findFirst({
     orderBy: { createdAt: "desc" },
     include: {
-      erp: { select: { id: true, nome: true } },
+      empresas: { include: { empresa: true } },
+      setores: {
+        include: {
+          padroes: { include: { padrao: true } },
+          necessarios: { include: { necessario: true } },
+        },
+      },
+      erp: true,
     },
   });
 }
+
 
 /* ======================================================
    UPDATE (mantém seu código como está)

@@ -61,8 +61,8 @@ async function showById(req, res) {
 ====================================================== */
 async function getLast(req, res) {
   try {
-    const last = await empresaService.getLast();
-    return res.status(200).json(last || null);
+    const empresa = await empresaService.getLast();
+    return res.status(200).json(empresa || null);
   } catch (error) {
     return res.status(500).json({
       message: "Erro ao buscar última empresa",
@@ -70,6 +70,7 @@ async function getLast(req, res) {
     });
   }
 }
+
 
 async function update(req, res) {
   try {

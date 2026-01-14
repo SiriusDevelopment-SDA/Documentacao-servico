@@ -46,7 +46,7 @@ async function showById(id) {
 async function getLast() {
   return prismaClient.empresa.findFirst({
     orderBy: { createdAt: "desc" },
-    include: includeEmpresa,
+    include: { erp: true }, // opcional, mas recomendado (você já está usando no front)
   });
 }
 
