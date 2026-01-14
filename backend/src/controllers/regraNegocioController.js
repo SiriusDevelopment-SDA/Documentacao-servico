@@ -30,11 +30,25 @@ async function create(req, res) {
 }
 
 /* ======================================================
+   READ LAST — Última regra (para o dashboard)
+====================================================== */
+async function getLast(req, res) {
+  try {
+    const last = await regraNegocioService.getLast();
+    return res.status(200).json(last || null);
+  } catch (error) {
+    return res.status(500).json({
+      message: "Erro ao buscar última regra de negócio",
+      error: error.message,
+    });
+  }
+}
+
+/* ======================================================
    READ ALL — retorna regra + setores
 ====================================================== */
 async function showAll(req, res) {
   try {
-    // A service já faz include
     const regras = await regraNegocioService.showAll();
     return res.status(200).json(regras);
   } catch (error) {
@@ -52,7 +66,6 @@ async function showById(req, res) {
   try {
     const { id } = req.params;
 
-    // A service já faz include
     const regra = await regraNegocioService.showById(id);
 
     if (!regra) {
@@ -70,15 +83,12 @@ async function showById(req, res) {
 
 /* ======================================================
    UPDATE — Atualiza regra + setores + parâmetros (pivôs)
-   Aceita:
-   setores[] = [{ id?, nome?, padroes?: number[], necessarios?: number[] }]
 ====================================================== */
 async function update(req, res) {
   try {
     const { id } = req.params;
     const { descricao, ativa, setores } = req.body;
 
-    // Validações leves (evita payload quebrado)
     if (setores !== undefined) {
       if (!Array.isArray(setores)) {
         return res.status(400).json({
@@ -91,7 +101,6 @@ async function update(req, res) {
         const temIdValido = Number.isFinite(idNum);
         const temNomeValido = typeof s?.nome === "string" && s.nome.trim().length > 0;
 
-        // IMPORTANTE: permite setor novo (mock) vindo sem id, desde que tenha nome
         if (!temIdValido && !temNomeValido) {
           return res.status(400).json({
             message: "Cada item de 'setores[]' deve conter 'id' (numérico) ou 'nome' (string).",
@@ -115,7 +124,7 @@ async function update(req, res) {
     const regra = await regraNegocioService.update(id, {
       descricao,
       ativa,
-      setores, // <- ESSENCIAL para atualizar/crear pivôs
+      setores,
     });
 
     return res.status(200).json(regra);
@@ -219,6 +228,7 @@ async function listarPorEmpresa(req, res) {
 
 export default {
   create,
+  getLast, 
   showAll,
   showById,
   update,

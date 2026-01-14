@@ -81,13 +81,17 @@ model NomeServico {
 }
 
 model Empresa {
-  id       Int            @id @default(autoincrement())
-  nome     String         @unique
-  cpf_cnpj String?        @unique
-  erpId    Int
-  erp      Erp            @relation(fields: [erpId], references: [id])
-  regras   EmpresaRegra[]
+  id        Int      @id @default(autoincrement())
+  nome      String   @unique
+  cpf_cnpj  String?  @unique
+  erpId     Int
+  erp       Erp      @relation(fields: [erpId], references: [id])
+  regras    EmpresaRegra[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
+
 
 model ParametroPadrao {
   id                    Int                                  @id @default(autoincrement())

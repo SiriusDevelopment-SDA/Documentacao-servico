@@ -8,5 +8,6 @@ router.get('/empresa', empresaController.showAll);
 router.get('/empresa/:id', empresaController.showById);
 router.put('/empresa/update/:id', empresaController.update);
 router.delete('/empresa/delete/:id', empresaController.destroy);
+router.get("/empresas/last", empresaController.getLast);
 
 export default router;

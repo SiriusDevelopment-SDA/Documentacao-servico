@@ -27,4 +27,6 @@ router.get(
   regraNegocioController.listarPorEmpresa
 );
 
+router.get("/regras/last", regraNegocioController.getLast);
+
 export default router;
