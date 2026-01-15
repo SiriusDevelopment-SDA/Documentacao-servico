@@ -22,10 +22,13 @@ type UltimoData = {
   ultimaEmpresa?: UltimaEmpresa | null;
 };
 
-const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "https://api.coraxy.com.br")
-  .replace(/\/+$/, "");
+// ✅ Normaliza base e evita duplicar /api (caso env já venha com /api)
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "https://api.coraxy.com.br").replace(
+  /\/+$/,
+  ""
+);
 
-const API_URL = `${API_BASE}/api`;
+const API_URL = API_BASE.endsWith("/api") ? API_BASE : `${API_BASE}/api`;
 
 export default function RegrasPage() {
   const [data, setData] = useState<UltimoData>({});
@@ -48,10 +51,7 @@ export default function RegrasPage() {
         if (!regraRes.ok) throw new Error(`Erro ao buscar última regra: ${regraRes.status}`);
         if (!empresaRes.ok) throw new Error(`Erro ao buscar última empresa: ${empresaRes.status}`);
 
-        const [ultimaRegra, ultimaEmpresa] = await Promise.all([
-          regraRes.json(),
-          empresaRes.json(),
-        ]);
+        const [ultimaRegra, ultimaEmpresa] = await Promise.all([regraRes.json(), empresaRes.json()]);
 
         setData({
           ultimaRegra: ultimaRegra ?? null,
