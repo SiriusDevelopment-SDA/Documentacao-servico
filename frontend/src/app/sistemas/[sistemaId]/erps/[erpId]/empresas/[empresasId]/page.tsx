@@ -29,26 +29,81 @@ interface Servico {
    PDF — DEV
 ============================== */
 function PrintableDev({
-  erpId,
+  erpName,
   services,
 }: {
-  erpId: number;
+  erpName: string;
   services: Servico[];
 }) {
   return (
-    <div id="print-dev" style={{ width: "210mm", padding: "20mm", background: "#fff", color: "#000" }}>
-      <h2>REGISTRO DE DESENVOLVEDORES</h2>
-      <p><strong>ERP:</strong> {erpId}</p>
-      <p><strong>Data:</strong> {new Date().toLocaleDateString()}</p>
+    <div
+      id="print-dev"
+      style={{
+        width: "210mm",
+        minHeight: "297mm",
+        padding: "20mm",
+        background: "#fff",
+        color: "#000",
+        fontFamily: "'Arial', sans-serif",
+        fontSize: "12px",
+        lineHeight: "1.6",
+      }}
+    >
+      <div style={{ textAlign: "center", marginBottom: "18px" }}>
+        <h2 style={{ margin: 0, fontSize: "20px", fontWeight: 700 }}>
+          REGISTRO DE DESENVOLVEDORES
+        </h2>
 
-      <hr />
+        <div
+          style={{
+            width: "100%",
+            height: "1px",
+            background: "#000",
+            margin: "10px 0 12px",
+            opacity: 0.6,
+          }}
+        />
+
+        <p style={{ margin: "4px 0" }}>
+          <strong>ERP:</strong> {erpName}
+        </p>
+        <p style={{ margin: "4px 0" }}>
+          <strong>Data:</strong> {new Date().toLocaleDateString()}
+        </p>
+      </div>
 
       {services.map((s) => (
-        <div key={s.id} style={{ marginBottom: 16 }}>
-          <strong>✓ {s.nomeServico?.nome ?? "Serviço sem nome"}</strong>
-          {s.descricao && <p>{s.descricao}</p>}
+        <div
+          key={s.id}
+          style={{
+            marginBottom: "20px",
+            paddingBottom: "14px",
+            borderBottom: "1px solid #ccc",
+          }}
+        >
+          <strong style={{ fontSize: "14px" }}>
+            ✓ {s.nomeServico?.nome ?? "Serviço sem nome"}
+          </strong>
+
+          {s.descricao && (
+            <p style={{ margin: "6px 0", whiteSpace: "pre-wrap" }}>
+              {s.descricao}
+            </p>
+          )}
+
           {s.parametros_padrao && (
-            <pre>{JSON.stringify(s.parametros_padrao, null, 2)}</pre>
+            <pre
+              style={{
+                background: "#f4f4f4",
+                padding: "10px",
+                borderRadius: "6px",
+                fontSize: "11px",
+                overflowX: "auto",
+                marginTop: "8px",
+              }}
+            >
+              {JSON.stringify(s.parametros_padrao, null, 2)}
+            </pre>
           )}
         </div>
       ))}
@@ -60,23 +115,56 @@ function PrintableDev({
    PDF — CONTRATO
 ============================== */
 function PrintableContract({
-  erpId,
+  erpName,
   services,
 }: {
-  erpId: number;
+  erpName: string;
   services: Servico[];
 }) {
   return (
-    <div id="print-contract" style={{ width: "210mm", padding: "20mm", background: "#fff", color: "#000" }}>
-      <h2>CONTRATO DE SERVIÇOS</h2>
-      <p><strong>ERP:</strong> {erpId}</p>
-      <p><strong>Data:</strong> {new Date().toLocaleDateString()}</p>
+    <div
+      id="print-contract"
+      style={{
+        width: "210mm",
+        minHeight: "297mm",
+        padding: "20mm",
+        background: "#fff",
+        color: "#000",
+        fontFamily: "'Arial', sans-serif",
+        fontSize: "12px",
+        lineHeight: "1.6",
+      }}
+    >
+      <div style={{ textAlign: "center", marginBottom: "18px" }}>
+        <h2 style={{ margin: 0, fontSize: "20px", fontWeight: 700 }}>
+          CONTRATO DE SERVIÇOS
+        </h2>
 
-      <hr />
+        <div
+          style={{
+            width: "100%",
+            height: "1px",
+            background: "#000",
+            margin: "10px 0 12px",
+            opacity: 0.6,
+          }}
+        />
 
-      {services.map((s) => (
-        <p key={s.id}>✓ {s.nomeServico?.nome ?? "Serviço sem nome"}</p>
-      ))}
+        <p style={{ margin: "4px 0" }}>
+          <strong>ERP:</strong> {erpName}
+        </p>
+        <p style={{ margin: "4px 0" }}>
+          <strong>Data:</strong> {new Date().toLocaleDateString()}
+        </p>
+      </div>
+
+      <ul style={{ margin: 0, paddingLeft: "20px" }}>
+        {services.map((s) => (
+          <li key={s.id} style={{ marginBottom: "8px", fontSize: "13px" }}>
+            ✓ {s.nomeServico?.nome ?? "Serviço sem nome"}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -96,20 +184,29 @@ export default function ListarServicosPage() {
   const [filtered, setFiltered] = useState<Servico[]>([]);
   const [search, setSearch] = useState("");
 
+  const [erpName, setErpName] = useState<string>("Carregando...");
+
   const [showDevPreview, setShowDevPreview] = useState(false);
   const [showContractPreview, setShowContractPreview] = useState(false);
 
   const [contractData, setContractData] = useState<any>(null);
 
-  /* =============================
-     PAGINAÇÃO
-  ============================== */
   const ITEMS_PER_PAGE = 6;
   const [currentPage, setCurrentPage] = useState(1);
 
-  /* =============================
-     LOAD SERVIÇOS
-  ============================== */
+  useEffect(() => {
+    async function loadErpName() {
+      try {
+        const res = await api.get(`/erp/${erpId}`);
+        setErpName(res.data.nome);
+      } catch (err) {
+        setErpName(`ERP ${erpId}`);
+      }
+    }
+
+    if (!Number.isNaN(erpId)) loadErpName();
+  }, [erpId]);
+
   useEffect(() => {
     async function loadServicos() {
       try {
@@ -127,18 +224,11 @@ export default function ListarServicosPage() {
     if (!Number.isNaN(erpId)) loadServicos();
   }, [erpId]);
 
-  /* =============================
-     LOAD DOCUMENTAÇÃO (CONTRATO)
-  ============================== */
   useEffect(() => {
     async function loadContrato() {
       try {
         const res = await api.get("/documentacoes");
-
-        const contrato = res.data.find(
-          (d: any) => Number(d.erpId) === erpId
-        );
-
+        const contrato = res.data.find((d: any) => Number(d.erpId) === erpId);
         setContractData(contrato ?? null);
       } catch (err) {
         console.error("Erro ao carregar documentação", err);
@@ -149,9 +239,6 @@ export default function ListarServicosPage() {
     if (!Number.isNaN(erpId)) loadContrato();
   }, [erpId]);
 
-  /* =============================
-     BUSCA
-  ============================== */
   useEffect(() => {
     const q = search.toLowerCase();
     setFiltered(
@@ -162,18 +249,12 @@ export default function ListarServicosPage() {
     setCurrentPage(1);
   }, [search, servicos]);
 
-  /* =============================
-     PAGINAÇÃO
-  ============================== */
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const paginatedServices = filtered.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
 
-  /* =============================
-     EXCLUIR
-  ============================== */
   const handleExcluir = async (id: number) => {
     if (!confirm("Deseja realmente excluir este serviço?")) return;
 
@@ -186,9 +267,6 @@ export default function ListarServicosPage() {
     }
   };
 
-  /* =============================
-     PDF (MANTIDO COMO ESTAVA)
-  ============================== */
   const generatePDF = async (elementId: string, filename: string) => {
     if (typeof window === "undefined") return;
 
@@ -236,7 +314,6 @@ export default function ListarServicosPage() {
 
   return (
     <div className={styles.container}>
-      {/* VOLTAR */}
       <button
         className={styles.backButton}
         onClick={() => router.push(`/sistemas/${sistemaId}/erps/${erpId}`)}
@@ -246,7 +323,6 @@ export default function ListarServicosPage() {
 
       <h1 className={styles.title}>Serviços cadastrados</h1>
 
-      {/* BOTÕES SUPERIORES */}
       <div className={styles.previewActions}>
         <button
           className={styles.blackBtn}
@@ -289,7 +365,6 @@ export default function ListarServicosPage() {
         </button>
       </div>
 
-      {/* BUSCA + ADD */}
       <div className={styles.topActions}>
         <input
           className={styles.searchInput}
@@ -309,7 +384,6 @@ export default function ListarServicosPage() {
         </Button>
       </div>
 
-      {/* LISTAGEM */}
       <ul className={styles.cardsGrid}>
         {paginatedServices.map((s) => (
           <li
@@ -337,7 +411,6 @@ export default function ListarServicosPage() {
         ))}
       </ul>
 
-      {/* PAGINAÇÃO */}
       {totalPages > 1 && (
         <div className={styles.pagination}>
           <button
@@ -358,7 +431,6 @@ export default function ListarServicosPage() {
         </div>
       )}
 
-      {/* MODAIS */}
       {showDevPreview && contractData && (
         <PreviewDevModal
           onClose={() => setShowDevPreview(false)}
@@ -375,7 +447,6 @@ export default function ListarServicosPage() {
         />
       )}
 
-      {/* PDF OCULTO — ALTERAÇÃO CRÍTICA (NÃO usar left negativo) */}
       <div
         style={{
           position: "absolute",
@@ -386,8 +457,8 @@ export default function ListarServicosPage() {
           zIndex: -1,
         }}
       >
-        <PrintableDev erpId={erpId} services={servicos} />
-        <PrintableContract erpId={erpId} services={servicos} />
+        <PrintableDev erpName={erpName} services={servicos} />
+        <PrintableContract erpName={erpName} services={servicos} />
       </div>
     </div>
   );
