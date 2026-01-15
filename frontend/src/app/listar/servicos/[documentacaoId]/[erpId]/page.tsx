@@ -22,15 +22,40 @@ interface Servico {
   id: number;
   descricao?: string;
   parametros_padrao?: any;
-  documentacaoId: number;
-  erpId: number;
+  documentacaoId?: number; // pode não vir no payload
+  erpId?: number; // pode não vir no payload
   nomeServicoId?: number;
-  nomeServico?: NomeServico; // 🔹 relação correta
+  nomeServico?: NomeServico; // relação correta
 }
 
 interface PrintableProps {
   data: any;
   services: Servico[];
+}
+
+/* ============================================
+   HELPERS: normalização de IDs vindos do backend
+=============================================== */
+function normalizeNumber(value: any): number {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : NaN;
+}
+
+function getDocIdFromServico(s: any): number {
+  // tenta vários formatos comuns
+  return normalizeNumber(
+    s?.documentacaoId ??
+      s?.documentacao_id ??
+      s?.documentacao?.id ??
+      s?.documentacao?.Id ??
+      s?.documentacaoID
+  );
+}
+
+function getErpIdFromServico(s: any): number {
+  return normalizeNumber(
+    s?.erpId ?? s?.erp_id ?? s?.erp?.id ?? s?.erp?.Id ?? s?.erpID
+  );
 }
 
 /* ============================================
@@ -48,17 +73,30 @@ function PrintableDev({ data, services }: PrintableProps) {
       <section className={styles.printSection}>
         <h3>DADOS DO CONTRATO</h3>
 
-        <p><strong>Nome da empresa:</strong> {data.nome_empresa ?? "Não informado"}</p>
-        <p><strong>Nome do Contratante:</strong> {data.nome_contratante ?? "Não informado"}</p>
-        <p><strong>Documentado por:</strong> {data.documentado_por ?? "Não informado"}</p>
+        <p>
+          <strong>Nome da empresa:</strong> {data.nome_empresa ?? "Não informado"}
+        </p>
+        <p>
+          <strong>Nome do Contratante:</strong>{" "}
+          {data.nome_contratante ?? "Não informado"}
+        </p>
+        <p>
+          <strong>Documentado por:</strong>{" "}
+          {data.documentado_por ?? "Não informado"}
+        </p>
         <p>
           <strong>Data:</strong>{" "}
           {data.data
             ? new Date(data.data).toLocaleDateString("pt-BR")
             : "Não informado"}
         </p>
-        <p><strong>ERP Selecionado:</strong> {data.erp ?? "Não informado"}</p>
-        <p><strong>Número do Contrato:</strong> {data.numero_contrato ?? "Não informado"}</p>
+        <p>
+          <strong>ERP Selecionado:</strong> {data.erp ?? "Não informado"}
+        </p>
+        <p>
+          <strong>Número do Contrato:</strong>{" "}
+          {data.numero_contrato ?? "Não informado"}
+        </p>
       </section>
 
       <section className={styles.printSection}>
@@ -66,9 +104,7 @@ function PrintableDev({ data, services }: PrintableProps) {
 
         {services.map((service) => (
           <div key={service.id} className={styles.printServiceBox}>
-            <h4>
-              ✓ {service.nomeServico?.nome || "Serviço sem nome"}
-            </h4>
+            <h4>✓ {service.nomeServico?.nome || "Serviço sem nome"}</h4>
 
             {service.descricao && (
               <p>
@@ -96,24 +132,35 @@ function PrintableContract({ data, services }: PrintableProps) {
 
   return (
     <div id="print-contract" className={styles.printWrapper}>
-      <h2 className={styles.printTitle}>
-        PRÉVIA - CONTRATO DE SERVIÇOS
-      </h2>
+      <h2 className={styles.printTitle}>PRÉVIA - CONTRATO DE SERVIÇOS</h2>
 
       <section className={styles.printSection}>
         <h3>DADOS DO CONTRATO</h3>
 
-        <p><strong>Nome da empresa:</strong> {data.nome_empresa ?? "Não informado"}</p>
-        <p><strong>Nome do Contratante:</strong> {data.nome_contratante ?? "Não informado"}</p>
-        <p><strong>Documentado por:</strong> {data.documentado_por ?? "Não informado"}</p>
+        <p>
+          <strong>Nome da empresa:</strong> {data.nome_empresa ?? "Não informado"}
+        </p>
+        <p>
+          <strong>Nome do Contratante:</strong>{" "}
+          {data.nome_contratante ?? "Não informado"}
+        </p>
+        <p>
+          <strong>Documentado por:</strong>{" "}
+          {data.documentado_por ?? "Não informado"}
+        </p>
         <p>
           <strong>Data:</strong>{" "}
           {data.data
             ? new Date(data.data).toLocaleDateString("pt-BR")
             : "Não informado"}
         </p>
-        <p><strong>ERP Selecionado:</strong> {data.erp ?? "Não informado"}</p>
-        <p><strong>Número do Contrato:</strong> {data.numero_contrato ?? "Não informado"}</p>
+        <p>
+          <strong>ERP Selecionado:</strong> {data.erp ?? "Não informado"}
+        </p>
+        <p>
+          <strong>Número do Contrato:</strong>{" "}
+          {data.numero_contrato ?? "Não informado"}
+        </p>
       </section>
 
       <section className={styles.printSection}>
@@ -133,11 +180,13 @@ function PrintableContract({ data, services }: PrintableProps) {
    PAGE
 =============================================== */
 export default function ListarServicosPage() {
-  const { documentacaoId, erpId } = useParams();
+  const params = useParams();
   const router = useRouter();
 
-  const docId = Number(documentacaoId);
-  const erp = Number(erpId);
+  // Mantém como estava: URL /listar/servicos/{documentacaoId}/{erpId}
+  // Se sua pasta estiver invertida ([erpId]/[documentacaoId]), troque aqui.
+  const docId = normalizeNumber((params as any)?.documentacaoId);
+  const erp = normalizeNumber((params as any)?.erpId);
 
   const [servicos, setServicos] = useState<Servico[]>([]);
   const [filtered, setFiltered] = useState<Servico[]>([]);
@@ -163,25 +212,42 @@ export default function ListarServicosPage() {
   useEffect(() => {
     async function load() {
       try {
-        const resServicos = await api.get("/servico");
+        // Força não-cache para evitar 304/body vazio e inconsistências
+        const resServicos = await api.get("/servico", {
+          headers: { "Cache-Control": "no-cache" },
+          // se o backend aceitar query, ótimo (não atrapalha se ele ignorar)
+          params: { documentacaoId: docId, erpId: erp },
+        });
 
-        const filtrados = resServicos.data.filter(
-          (s: Servico) =>
-            Number(s.documentacaoId) === docId &&
-            Number(s.erpId) === erp
-        );
+        // /servico retorna array puro (como você mostrou no Network)
+        const lista: any[] = Array.isArray(resServicos.data)
+          ? resServicos.data
+          : [];
+
+        // Filtra com leitura robusta dos campos
+        const filtrados: Servico[] = lista.filter((s: any) => {
+          const sDocId = getDocIdFromServico(s);
+          const sErpId = getErpIdFromServico(s);
+          return sDocId === docId && sErpId === erp;
+        });
 
         setServicos(filtrados);
         setFiltered(filtrados);
 
-        const resDoc = await api.get(`/documentacoes/${docId}`);
+        const resDoc = await api.get(`/documentacoes/${docId}`, {
+          headers: { "Cache-Control": "no-cache" },
+        });
         setDocumentacaoData(resDoc.data);
-        setNomeDocumentacao(resDoc.data.nome_contratante);
+        setNomeDocumentacao(resDoc.data?.nome_contratante ?? "");
 
-        const resErp = await api.get(`/erp/${erp}`);
-        setNomeErp(resErp.data.nome);
+        const resErp = await api.get(`/erp/${erp}`, {
+          headers: { "Cache-Control": "no-cache" },
+        });
+        setNomeErp(resErp.data?.nome ?? "");
       } catch (error) {
         console.log("Erro ao carregar dados:", error);
+        setServicos([]);
+        setFiltered([]);
       }
     }
 
@@ -192,10 +258,10 @@ export default function ListarServicosPage() {
 
   /* 🔍 BUSCA PELO NOME DO SERVIÇO */
   useEffect(() => {
-    const termo = search.toLowerCase();
+    const termo = search.toLowerCase().trim();
 
     const results = servicos.filter((s) =>
-      s.nomeServico?.nome?.toLowerCase().includes(termo)
+      (s.nomeServico?.nome ?? "").toLowerCase().includes(termo)
     );
 
     setFiltered(results);
@@ -222,11 +288,9 @@ export default function ListarServicosPage() {
       <h1 className={styles.title}>Serviços cadastrados</h1>
 
       <p className={styles.subtitle}>
-        <span>Documentação:</span>{" "}
-        <strong>{nomeDocumentacao || "—"}</strong>
+        <span>Documentação:</span> <strong>{nomeDocumentacao || "—"}</strong>
         <span className={styles.divider} />
-        <span>ERP:</span>{" "}
-        <strong>{nomeErp || "—"}</strong>
+        <span>ERP:</span> <strong>{nomeErp || "—"}</strong>
       </p>
 
       <div className={styles.topActions}>
@@ -237,11 +301,7 @@ export default function ListarServicosPage() {
           onChange={(e) => setSearch(e.target.value)}
         />
 
-        <Button
-          onClick={() =>
-            router.push(`/criar/servicos/${docId}/${erp}`)
-          }
-        >
+        <Button onClick={() => router.push(`/criar/servicos/${docId}/${erp}`)}>
           Adicionar serviço
         </Button>
 
@@ -323,6 +383,12 @@ export default function ListarServicosPage() {
           selectedServices={servicos}
         />
       )}
+
+      {/* Printable components mantidos (caso você use em outro fluxo) */}
+      <div style={{ display: "none" }}>
+        <PrintableDev data={documentacaoData} services={servicos} />
+        <PrintableContract data={documentacaoData} services={servicos} />
+      </div>
     </div>
   );
 }
