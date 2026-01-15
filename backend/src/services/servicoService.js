@@ -1,18 +1,17 @@
 import prismaClient from "../prismaClient.js";
 
-/**
- * ===============================
- * NORMALIZAÇÃO (🔥 PARTE MAIS IMPORTANTE)
- * ===============================
- * Garante que o frontend SEMPRE receba:
- * nomeServico: string
- */
+
 function normalizeServico(servico) {
   if (!servico) return servico;
 
   return {
     ...servico,
-    nomeServico: servico.nomeServico?.nome ?? null,
+
+    // ✅ mantém o objeto completo do relacionamento
+    nomeServico: servico.nomeServico ?? null,
+
+    // ✅ string auxiliar (opcional, mas útil)
+    nomeServicoNome: servico.nomeServico?.nome ?? null,
   };
 }
 
