@@ -24,7 +24,17 @@ async function create(req, res) {
 
 async function showAll(req, res) {
   try {
-    const parametros = await parametrosPadronizadosService.showAll();
+    const { erpId } = req.query;
+
+    if (!erpId) {
+      return res.status(400).json({
+        message: "erpId é obrigatório",
+      });
+    }
+
+    const parametros =
+      await parametrosPadronizadosService.showAll(erpId);
+
     return res.status(200).json(parametros);
   } catch (error) {
     return res.status(500).json({
@@ -33,6 +43,7 @@ async function showAll(req, res) {
     });
   }
 }
+
 
 async function showById(req, res) {
   try {
