@@ -9,8 +9,19 @@ async function create(data){
     })
 }
 
-async function showAll(){
-    return prismaClient.parametroNecessario.findMany();
+async function showAll(erpId) {
+  if (!erpId) {
+    throw new Error("erpId é obrigatório para listar parâmetros padronizados");
+  }
+
+  return prismaClient.parametroNecessario.findMany({
+    where: {
+      erpId: Number(erpId),
+    },
+    orderBy: {
+      nome: "asc",
+    },
+  });
 }
 
 async function showById(id){

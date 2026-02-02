@@ -24,11 +24,21 @@ async function create(req, res) {
 
 async function showAll(req, res) {
   try {
-    const parametros = await parametrosNecessariosService.showAll();
+    const { erpId } = req.query;
+
+    if (!erpId) {
+      return res.status(400).json({
+        message: "erpId é obrigatório",
+      });
+    }
+
+    const parametros =
+      await parametrosNecessariosService.showAll(erpId);
+
     return res.status(200).json(parametros);
   } catch (error) {
     return res.status(500).json({
-      message: "Erro ao buscar os parâmetros necessários!",
+      message: "Erro ao buscar os parâmetros!",
       error: error.message,
     });
   }
