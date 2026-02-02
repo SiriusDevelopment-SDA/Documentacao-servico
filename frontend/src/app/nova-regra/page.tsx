@@ -9,6 +9,9 @@ import { Card } from "primereact/card";
 
 import styles from "./styles.module.scss";
 
+/* =========================
+   INTERFACES
+========================= */
 interface Empresa {
   id: number;
   nome: string;
@@ -31,6 +34,9 @@ interface ParamNecessario {
   nome: string;
 }
 
+/* =========================
+   COMPONENT
+========================= */
 export default function NovaRegraPage() {
   const [empresaTexto, setEmpresaTexto] = useState("");
   const [empresaSelecionada, setEmpresaSelecionada] = useState<Empresa | null>(null);
@@ -44,10 +50,15 @@ export default function NovaRegraPage() {
   const [setoresSelecionados, setSetoresSelecionados] = useState<string[]>([]);
   const setoresMock = ["Comercial", "Financeiro", "Suporte"];
 
-  const [padronizados, setPadronizados] = useState<Record<string, { padronizado: ParamPadronizado; necessarios: ParamNecessario[] }[]>>({});
+  const [padronizados, setPadronizados] = useState<
+    Record<string, { padronizado: ParamPadronizado; necessarios: ParamNecessario[] }[]>
+  >({});
   const [padronizadosAPI, setPadronizadosAPI] = useState<ParamPadronizado[]>([]);
-  const [necessariosAPI, setNecessariosAPI] = useState<Record<number, ParamNecessario[]>>({});
+  const [necessariosAPI, setNecessariosAPI] = useState<ParamNecessario[]>([]);
 
+  /* =========================
+     FETCHES
+  ========================= */
   const fetchEmpresas = async () => {
     const res = await fetch("https://api.coraxy.com.br/api/empresa");
     setEmpresas(await res.json());
@@ -58,26 +69,48 @@ export default function NovaRegraPage() {
     setErps(await res.json());
   };
 
-  const fetchPadronizados = async () => {
-    const res = await fetch("https://api.coraxy.com.br/api/parametros");
-    setPadronizadosAPI(await res.json());
+  const fetchPadronizados = async (erpId: number) => {
+    const res = await fetch(
+      `https://api.coraxy.com.br/api/parametros?erpId=${erpId}`
+    );
+    const data = await res.json();
+    setPadronizadosAPI(Array.isArray(data) ? data : []);
   };
 
-  const fetchNecessarios = async (padronizadoId: number) => {
-    const res = await fetch("https://api.coraxy.com.br/api/parametrosnecessarios");
-    const data: ParamNecessario[] = await res.json();
-    setNecessariosAPI(prev => ({ ...prev, [padronizadoId]: data }));
+  const fetchNecessarios = async (erpId: number) => {
+    const res = await fetch(
+      `https://api.coraxy.com.br/api/parametrosnecessarios?erpId=${erpId}`
+    );
+    const data = await res.json();
+    setNecessariosAPI(Array.isArray(data) ? data : []);
   };
 
+  /* =========================
+     EFFECTS
+  ========================= */
   useEffect(() => {
     fetchEmpresas();
     fetchErps();
-    fetchPadronizados();
   }, []);
 
-  const adicionarPadronizado = (setor: string, pad: ParamPadronizado) => {
-    fetchNecessarios(pad.id);
+  useEffect(() => {
+    if (erp?.id) {
+      fetchPadronizados(erp.id);
+      fetchNecessarios(erp.id);
 
+      // limpa seleções antigas ao trocar ERP
+      setPadronizados({});
+    } else {
+      setPadronizadosAPI([]);
+      setNecessariosAPI([]);
+      setPadronizados({});
+    }
+  }, [erp]);
+
+  /* =========================
+     HANDLERS
+  ========================= */
+  const adicionarPadronizado = (setor: string, pad: ParamPadronizado) => {
     setPadronizados(prev => {
       const lista = prev[setor] || [];
       if (lista.some(item => item.padronizado.id === pad.id)) return prev;
@@ -106,9 +139,6 @@ export default function NovaRegraPage() {
     setPadronizados(copia);
   };
 
-  /** ============================
-   * NOVO: REMOVER PADRONIZADO
-   =============================*/
   const removerPadronizado = (setor: string, index: number) => {
     setPadronizados(prev => {
       const copia = [...prev[setor]];
@@ -117,9 +147,6 @@ export default function NovaRegraPage() {
     });
   };
 
-  /** ============================
-   * NOVO: REMOVER NECESSARIO
-   =============================*/
   const removerNecessario = (setor: string, index: number, necId: number) => {
     setPadronizados(prev => {
       const copia = [...prev[setor]];
@@ -128,21 +155,17 @@ export default function NovaRegraPage() {
     });
   };
 
+  /* =========================
+     SALVAR
+  ========================= */
   const salvar = async () => {
     if (!erp) return alert("Selecione um ERP.");
     if (!empresaSelecionada) return alert("Selecione uma empresa.");
 
-    const descFinal = descricao.trim() === "" ? "Regra automática" : descricao;
-
-    const setoresPayload = setoresSelecionados.map(setor => {
-      const lista = padronizados[setor] || [];
-
-      return {
-        nome: setor,
-        padroes: lista.map(item => item.padronizado.id),
-        necessarios: lista.flatMap(item => item.necessarios.map(n => n.id))
-      };
-    });
+    const setoresPayload = setoresSelecionados.map(setor => ({
+      nome: setor,
+      padroes: (padronizados[setor] || []).map(p => p.padronizado.id),
+    }));
 
     if (setoresPayload.length === 0) {
       return alert("Adicione ao menos 1 setor e 1 parâmetro padronizado!");
@@ -151,37 +174,36 @@ export default function NovaRegraPage() {
     const payload = {
       empresaId: empresaSelecionada.id,
       erpId: erp.id,
-      descricao: descFinal,
+      descricao: descricao.trim() || "Regra automática",
       setores: setoresPayload,
       ativa: status
     };
 
-    try {
-      const res = await fetch("https://api.coraxy.com.br/api/regras", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
+    const res = await fetch("https://api.coraxy.com.br/api/regras", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-      const json = await res.json();
+    const json = await res.json();
 
-      if (!res.ok) {
-        console.error("Erro ao salvar:", json);
-        return alert(json.message || "Erro ao salvar regras!");
-      }
-
-      alert("Regra salva com sucesso!");
-    } catch (err) {
-      console.error("ERRO FETCH:", err);
-      alert("Erro de conexão com API.");
+    if (!res.ok) {
+      console.error(json);
+      return alert(json.message || "Erro ao salvar regra.");
     }
+
+    alert("Regra salva com sucesso!");
   };
 
+  /* =========================
+     JSX
+  ========================= */
   return (
     <div className={styles.backgroundGradient}>
       <div className={styles.container}>
         <h2 className={styles.title}>Criar Regra de Negócio</h2>
 
+        {/* INFORMAÇÕES GERAIS */}
         <Card title="Informações Gerais" className={styles.card}>
           <label className={styles.label}>Empresa</label>
           <div className={styles.empresaRow}>
@@ -228,12 +250,16 @@ export default function NovaRegraPage() {
           />
         </Card>
 
+        {/* SETORES */}
         <Card title="Setores" className={styles.card}>
           <div className={styles.setorRow}>
             <Dropdown
               value={null}
               options={setoresMock}
-              onChange={(e) => !setoresSelecionados.includes(e.value) && setSetoresSelecionados(prev => [...prev, e.value])}
+              onChange={(e) =>
+                !setoresSelecionados.includes(e.value) &&
+                setSetoresSelecionados(prev => [...prev, e.value])
+              }
               placeholder="Selecione um setor"
               className={styles.dropdownSelect}
             />
@@ -253,30 +279,38 @@ export default function NovaRegraPage() {
           </div>
         </Card>
 
+        {/* PARÂMETROS */}
         {setoresSelecionados.length > 0 && (
           <Card title="Parâmetros" className={styles.card}>
-            {setoresSelecionados.map((setor) => (
+            {setoresSelecionados.map(setor => (
               <div key={setor} className={styles.paramBlock}>
                 <h4 className={styles.paramSetorTitle}>{setor}</h4>
 
                 <Dropdown
-                  options={padronizadosAPI.filter(p => erp && p.erpId === erp.id)}
+                  options={padronizadosAPI}
                   optionLabel="nome"
-                  placeholder="Selecione um Parâmetro Padronizado"
+                  placeholder={erp ? "Selecione um Parâmetro Padronizado" : "Selecione um ERP primeiro"}
+                  disabled={!erp}
                   className={styles.paramDropdown}
                   onChange={(e) => adicionarPadronizado(setor, e.value)}
                 />
 
                 {(padronizados[setor] || []).map((item, idx) => (
                   <div key={idx} className={styles.paramCard}>
-
                     <div className={styles.paramHeader}>
-                      <span className={styles.paramTitle}>{item.padronizado.nome}</span>
-                      <span className={styles.closeBtn} onClick={() => removerPadronizado(setor, idx)}>✕</span>
+                      <span className={styles.paramTitle}>
+                        {item.padronizado.nome}
+                      </span>
+                      <span
+                        className={styles.closeBtn}
+                        onClick={() => removerPadronizado(setor, idx)}
+                      >
+                        ✕
+                      </span>
                     </div>
 
                     <Dropdown
-                      options={necessariosAPI[item.padronizado.id] || []}
+                      options={necessariosAPI}
                       optionLabel="nome"
                       placeholder="Adicionar necessário"
                       className={styles.paramDropdownSmall}
@@ -285,20 +319,16 @@ export default function NovaRegraPage() {
 
                     {item.necessarios.length > 0 && (
                       <table className={styles.tableNecessarios}>
-                        <thead>
-                          <tr>
-                            <th>Necessário</th>
-                            <th>Ação</th>
-                          </tr>
-                        </thead>
                         <tbody>
-                          {item.necessarios.map((n, k) => (
-                            <tr key={k}>
+                          {item.necessarios.map((n) => (
+                            <tr key={n.id}>
                               <td>{n.nome}</td>
                               <td>
                                 <span
                                   className={styles.closeBtn}
-                                  onClick={() => removerNecessario(setor, idx, n.id)}
+                                  onClick={() =>
+                                    removerNecessario(setor, idx, n.id)
+                                  }
                                 >
                                   ✕
                                 </span>
@@ -316,7 +346,12 @@ export default function NovaRegraPage() {
         )}
 
         <div className={styles.saveBtnContainer}>
-          <Button label="Salvar Regra" icon="pi pi-check" className={styles.btnSave} onClick={salvar} />
+          <Button
+            label="Salvar Regra"
+            icon="pi pi-check"
+            className={styles.btnSave}
+            onClick={salvar}
+          />
         </div>
       </div>
     </div>
