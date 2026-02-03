@@ -1,21 +1,30 @@
-"use client"; // Adicione esta linha
+"use client";
 
 import { useState } from "react";
 import styles from "./parametro.module.scss";
-import { Parametro } from '@/app/parametros-padronizados/types';  // Importe o tipo Parametro de 'types.ts'
+import { Parametro } from "@/app/parametros-padronizados/types";
 
 interface ParametroSearchProps {
-  parametros: Parametro[];
+  parametros: Parametro[] | undefined; // ← pode vir undefined
   onDelete: (id: number) => void;
-  onEdit: (param: Parametro) => void;  // Tipagem correta de onEdit
+  onEdit: (param: Parametro) => void;
 }
 
-const ParametroSearch = ({ parametros, onDelete, onEdit }: ParametroSearchProps) => {
+const ParametroSearch = ({
+  parametros,
+  onDelete,
+  onEdit,
+}: ParametroSearchProps) => {
   const [searchTerm, setSearchTerm] = useState("");
 
+  // 🔒 GARANTIA DE ARRAY (EVITA CRASH)
+  const safeParametros: Parametro[] = Array.isArray(parametros)
+    ? parametros
+    : [];
+
   // Filtra os parâmetros de acordo com o termo de pesquisa
-  const filteredParametros = parametros.filter((param) =>
-    param.nome.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredParametros = safeParametros.filter((param) =>
+    param.nome?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -27,6 +36,7 @@ const ParametroSearch = ({ parametros, onDelete, onEdit }: ParametroSearchProps)
         onChange={(e) => setSearchTerm(e.target.value)}
         className={styles.searchInput}
       />
+
       <select className={styles.selectField}>
         {filteredParametros.length === 0 ? (
           <option>Sem parâmetros cadastrados</option>
@@ -39,17 +49,17 @@ const ParametroSearch = ({ parametros, onDelete, onEdit }: ParametroSearchProps)
         )}
       </select>
 
-      {/* Verifique se há parâmetros para exibir os botões */}
       {filteredParametros.length > 0 && (
         <div className={styles.buttons}>
           <button
-            onClick={() => onEdit(filteredParametros[0] as Parametro)} // Garantir que o tipo seja 'Parametro'
+            onClick={() => onEdit(filteredParametros[0])}
             className={styles.button}
           >
             Editar
           </button>
+
           <button
-            onClick={() => onDelete(filteredParametros[0].id)} // Garantir que o 'id' seja acessado corretamente
+            onClick={() => onDelete(filteredParametros[0].id)}
             className={styles.buttonExcluir}
           >
             Excluir

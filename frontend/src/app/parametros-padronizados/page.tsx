@@ -15,19 +15,20 @@ export default function ParametrosPadronizados() {
   const [parametros, setParametros] = useState<Parametro[]>([]);
   const [nome, setNome] = useState("");
   const [valor, setValor] = useState("");
-  const [erpId, setErpId] = useState<number>(0); // Estado para o erpId
+  const [erpId, setErpId] = useState<number | undefined>(undefined); // Estado para o erpId
   const [showModal, setShowModal] = useState(false);
   const [parametroAtualizar, setParametroAtualizar] = useState<Parametro | null>(null);
   const [erps, setErps] = useState<Erp[]>([]); // Estado para os ERPs
 
   // Função para carregar os parâmetros da API
-  const fetchParametros = async () => {
+  const fetchParametros = async (erpId: number) => {
     try {
-      const res = await fetch("https://api.coraxy.com.br/api/parametros"); // URL da API
+      const res = await fetch(`https://api.coraxy.com.br/api/parametros?erpId=${erpId}`); // URL da API
       const data = await res.json();
-      setParametros(data);
+      setParametros(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Erro ao buscar parâmetros:", err);
+      setParametros([])
     }
   };
 
@@ -44,7 +45,7 @@ export default function ParametrosPadronizados() {
 
   // Função para criar um parâmetro
   const criarParametro = async () => {
-    if (nome && erpId !== 0) { // Verifica se erpId não é 0
+    if (nome && erpId !== undefined) { // Verifica se erpId não é 0
       const novoParametro = { nome, erpId };
 
       try {
@@ -57,7 +58,7 @@ export default function ParametrosPadronizados() {
         setParametros([...parametros, data]);
         setNome(""); // Limpar campo de nome
         setValor(""); // Limpar campo de valor
-        setErpId(0); // Limpar o campo de erpId
+        setErpId(undefined); // Limpar o campo de erpId
       } catch (err) {
         console.error("Erro ao criar parâmetro:", err);
       }
@@ -104,9 +105,16 @@ export default function ParametrosPadronizados() {
   };
 
   useEffect(() => {
-    fetchParametros(); // Carregar parâmetros quando o componente for montado
     fetchErps(); // Carregar os ERPs
   }, []);
+
+  useEffect(() => {
+    if(erpId){
+      fetchParametros(erpId);
+    } else {
+      setParametros([]);
+    }
+  }, [erpId])
 
   return (
     <div className={styles.container}>
@@ -122,11 +130,12 @@ export default function ParametrosPadronizados() {
           className={styles.inputField}
         />
         <select
-          value={erpId}
-          onChange={(e) => setErpId(Number(e.target.value))}
+          value={erpId ?? ""}
+          onChange={(e) => setErpId(e.target.value ? Number(e.target.value) : undefined)}
           className={styles.inputField}
         >
-          <option value={0}>Selecione o ERP</option>
+          <option value="">Selecione o ERP</option>
+
           {erps.map((erp) => (
             <option key={erp.id} value={erp.id}>
               {erp.nome}
