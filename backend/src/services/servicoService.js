@@ -64,8 +64,15 @@ async function create(data) {
  * SHOW ALL
  * ===============================
  */
-async function showAll() {
+async function showAll({documentacaoId}) {
+  if(!documentacaoId || isNaN(documentacaoId)){
+    throw new Error("documentacaoId inválido ou não informado");
+  }
+
   const servicos = await prismaClient.servico.findMany({
+    where: {
+      documentacaoId: Number(documentacaoId)
+    },
     include: {
       nomeServico: true,
     },

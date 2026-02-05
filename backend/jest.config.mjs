@@ -3,6 +3,8 @@ export default {
 
   testMatch: [
     "**/src/controllers/tests/**/*.test.js",
-    "**/src/services/tests/**/*.test.js"
+    "**/src/services/tests/**/*.test.js",
   ],
+
+  transform: {},
 };

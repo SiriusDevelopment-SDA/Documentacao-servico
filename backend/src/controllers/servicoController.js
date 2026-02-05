@@ -53,8 +53,19 @@ async function create(req, res) {
 
 async function showAll(req, res) {
   try {
-    const servicos = await servicoService.showAll();
+    const { documentacaoId} = req.query;
+
+    if(!documentacaoId){
+      return res.status(400).json({
+        message: "documentacaoId é obrigatório para listar serviços."
+      });
+    }
+
+    const servicos = await servicoService.showAll({
+      documentacaoId: Number(documentacaoId)
+    });
     return res.status(200).json(servicos);
+
   } catch (error) {
     return res.status(500).json({
       message: "Erro ao buscar os serviços!",
