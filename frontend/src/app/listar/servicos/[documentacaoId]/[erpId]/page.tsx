@@ -22,10 +22,10 @@ interface Servico {
   id: number;
   descricao?: string;
   parametros_padrao?: any;
-  documentacaoId?: number; // pode não vir no payload
-  erpId?: number; // pode não vir no payload
+  documentacaoId?: number;
+  erpId?: number;
   nomeServicoId?: number;
-  nomeServico?: NomeServico; // relação correta
+  nomeServico?: NomeServico;
 }
 
 interface PrintableProps {
@@ -33,34 +33,17 @@ interface PrintableProps {
   services: Servico[];
 }
 
-/* ============================================
-   HELPERS: normalização de IDs vindos do backend
-=============================================== */
+/* ===============================
+   HELPERS
+================================ */
 function normalizeNumber(value: any): number {
   const n = Number(value);
   return Number.isFinite(n) ? n : NaN;
 }
 
-function getDocIdFromServico(s: any): number {
-  // tenta vários formatos comuns
-  return normalizeNumber(
-    s?.documentacaoId ??
-      s?.documentacao_id ??
-      s?.documentacao?.id ??
-      s?.documentacao?.Id ??
-      s?.documentacaoID
-  );
-}
-
-function getErpIdFromServico(s: any): number {
-  return normalizeNumber(
-    s?.erpId ?? s?.erp_id ?? s?.erp?.id ?? s?.erp?.Id ?? s?.erpID
-  );
-}
-
-/* ============================================
+/* ===============================
    PRINT DEV (PDF)
-=============================================== */
+================================ */
 function PrintableDev({ data, services }: PrintableProps) {
   if (!data) return null;
 
@@ -73,30 +56,15 @@ function PrintableDev({ data, services }: PrintableProps) {
       <section className={styles.printSection}>
         <h3>DADOS DO CONTRATO</h3>
 
-        <p>
-          <strong>Nome da empresa:</strong> {data.nome_empresa ?? "Não informado"}
-        </p>
-        <p>
-          <strong>Nome do Contratante:</strong>{" "}
-          {data.nome_contratante ?? "Não informado"}
-        </p>
-        <p>
-          <strong>Documentado por:</strong>{" "}
-          {data.documentado_por ?? "Não informado"}
-        </p>
+        <p><strong>Nome da empresa:</strong> {data.nome_empresa ?? "Não informado"}</p>
+        <p><strong>Nome do Contratante:</strong> {data.nome_contratante ?? "Não informado"}</p>
+        <p><strong>Documentado por:</strong> {data.documentado_por ?? "Não informado"}</p>
         <p>
           <strong>Data:</strong>{" "}
-          {data.data
-            ? new Date(data.data).toLocaleDateString("pt-BR")
-            : "Não informado"}
+          {data.data ? new Date(data.data).toLocaleDateString("pt-BR") : "Não informado"}
         </p>
-        <p>
-          <strong>ERP Selecionado:</strong> {data.erp ?? "Não informado"}
-        </p>
-        <p>
-          <strong>Número do Contrato:</strong>{" "}
-          {data.numero_contrato ?? "Não informado"}
-        </p>
+        <p><strong>ERP Selecionado:</strong> {data.erp ?? "Não informado"}</p>
+        <p><strong>Número do Contrato:</strong> {data.numero_contrato ?? "Não informado"}</p>
       </section>
 
       <section className={styles.printSection}>
@@ -107,9 +75,7 @@ function PrintableDev({ data, services }: PrintableProps) {
             <h4>✓ {service.nomeServico?.nome || "Serviço sem nome"}</h4>
 
             {service.descricao && (
-              <p>
-                <strong>Descrição:</strong> {service.descricao}
-              </p>
+              <p><strong>Descrição:</strong> {service.descricao}</p>
             )}
 
             {service.parametros_padrao && (
@@ -124,9 +90,9 @@ function PrintableDev({ data, services }: PrintableProps) {
   );
 }
 
-/* ============================================
+/* ===============================
    PRINT CONTRATO (PDF)
-=============================================== */
+================================ */
 function PrintableContract({ data, services }: PrintableProps) {
   if (!data) return null;
 
@@ -137,30 +103,15 @@ function PrintableContract({ data, services }: PrintableProps) {
       <section className={styles.printSection}>
         <h3>DADOS DO CONTRATO</h3>
 
-        <p>
-          <strong>Nome da empresa:</strong> {data.nome_empresa ?? "Não informado"}
-        </p>
-        <p>
-          <strong>Nome do Contratante:</strong>{" "}
-          {data.nome_contratante ?? "Não informado"}
-        </p>
-        <p>
-          <strong>Documentado por:</strong>{" "}
-          {data.documentado_por ?? "Não informado"}
-        </p>
+        <p><strong>Nome da empresa:</strong> {data.nome_empresa ?? "Não informado"}</p>
+        <p><strong>Nome do Contratante:</strong> {data.nome_contratante ?? "Não informado"}</p>
+        <p><strong>Documentado por:</strong> {data.documentado_por ?? "Não informado"}</p>
         <p>
           <strong>Data:</strong>{" "}
-          {data.data
-            ? new Date(data.data).toLocaleDateString("pt-BR")
-            : "Não informado"}
+          {data.data ? new Date(data.data).toLocaleDateString("pt-BR") : "Não informado"}
         </p>
-        <p>
-          <strong>ERP Selecionado:</strong> {data.erp ?? "Não informado"}
-        </p>
-        <p>
-          <strong>Número do Contrato:</strong>{" "}
-          {data.numero_contrato ?? "Não informado"}
-        </p>
+        <p><strong>ERP Selecionado:</strong> {data.erp ?? "Não informado"}</p>
+        <p><strong>Número do Contrato:</strong> {data.numero_contrato ?? "Não informado"}</p>
       </section>
 
       <section className={styles.printSection}>
@@ -176,15 +127,13 @@ function PrintableContract({ data, services }: PrintableProps) {
   );
 }
 
-/* ============================================
+/* ===============================
    PAGE
-=============================================== */
+================================ */
 export default function ListarServicosPage() {
   const params = useParams();
   const router = useRouter();
 
-  // Mantém como estava: URL /listar/servicos/{documentacaoId}/{erpId}
-  // Se sua pasta estiver invertida ([erpId]/[documentacaoId]), troque aqui.
   const docId = normalizeNumber((params as any)?.documentacaoId);
   const erp = normalizeNumber((params as any)?.erpId);
 
@@ -212,27 +161,18 @@ export default function ListarServicosPage() {
   useEffect(() => {
     async function load() {
       try {
-        // Força não-cache para evitar 304/body vazio e inconsistências
         const resServicos = await api.get("/servico", {
           headers: { "Cache-Control": "no-cache" },
-          // se o backend aceitar query, ótimo (não atrapalha se ele ignorar)
           params: { documentacaoId: docId, erpId: erp },
         });
 
-        // /servico retorna array puro (como você mostrou no Network)
-        const lista: any[] = Array.isArray(resServicos.data)
+        const lista: Servico[] = Array.isArray(resServicos.data)
           ? resServicos.data
           : [];
 
-        // Filtra com leitura robusta dos campos
-        const filtrados: Servico[] = lista.filter((s: any) => {
-          const sDocId = getDocIdFromServico(s);
-          const sErpId = getErpIdFromServico(s);
-          return sDocId === docId && sErpId === erp;
-        });
-
-        setServicos(filtrados);
-        setFiltered(filtrados);
+        // ✅ backend já filtra por documentação
+        setServicos(lista);
+        setFiltered(lista);
 
         const resDoc = await api.get(`/documentacoes/${docId}`, {
           headers: { "Cache-Control": "no-cache" },
@@ -256,7 +196,7 @@ export default function ListarServicosPage() {
     }
   }, [docId, erp]);
 
-  /* 🔍 BUSCA PELO NOME DO SERVIÇO */
+  /* 🔍 BUSCA */
   useEffect(() => {
     const termo = search.toLowerCase().trim();
 
@@ -268,7 +208,7 @@ export default function ListarServicosPage() {
     setCurrentPage(1);
   }, [search, servicos]);
 
-  /* 🗑️ DELETAR SERVIÇO */
+  /* 🗑️ DELETAR */
   async function deletar(id: number) {
     if (!confirm("Deseja excluir este serviço?")) return;
 
@@ -384,7 +324,6 @@ export default function ListarServicosPage() {
         />
       )}
 
-      {/* Printable components mantidos (caso você use em outro fluxo) */}
       <div style={{ display: "none" }}>
         <PrintableDev data={documentacaoData} services={servicos} />
         <PrintableContract data={documentacaoData} services={servicos} />
